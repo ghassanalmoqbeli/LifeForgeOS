@@ -47,10 +47,20 @@ android {
             isDebuggable = false
             isMinifyEnabled = true
             isShrinkResources = true
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+    }
+
+    signingConfigs {
+        create("release") {
+            storeFile = file(properties["lifeforgeReleaseStoreFile"] as String)
+            storePassword = properties["lifeforgeReleaseStorePassword"] as String
+            keyAlias = properties["lifeforgeReleaseKeyAlias"] as String
+            keyPassword = properties["lifeforgeReleaseKeyPassword"] as String
         }
     }
 
