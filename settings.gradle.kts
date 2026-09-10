@@ -5,13 +5,6 @@ pluginManagement {
         mavenCentral()
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     }
-    resolutionStrategy {
-        eachPlugin {
-            if (requested.id.id == "org.jetbrains.kotlin.multiplatform") {
-                useModule("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.0")
-            }
-        }
-    }
 }
 
 dependencyResolutionManagement {
