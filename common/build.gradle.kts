@@ -52,8 +52,6 @@ kotlin {
                 // SQLDelight
                 implementation(libs.sqldelight.runtime)
                 implementation(libs.sqldelight.coroutines)
-                implementation(libs.sqldelight.android)
-                implementation(libs.sqldelight.jvm)
 
                 // Result/Error handling
                 implementation(libs.arrow.core)
@@ -81,6 +79,7 @@ kotlin {
                 implementation(libs.firebase.firestore)
                 implementation(libs.firebase.storage)
                 implementation(libs.firebase.messaging)
+                implementation(libs.sqldelight.android)
             }
         }
 
@@ -91,6 +90,7 @@ kotlin {
                 implementation(libs.kotlinx.coroutines.swing)
                 implementation(libs.slf4j.api)
                 implementation(libs.logback.classic)
+                implementation(libs.sqldelight.jvm)
             }
         }
 
@@ -105,7 +105,7 @@ kotlin {
         val iosMain by getting {
             dependencies {
                 implementation(libs.kotlinx.coroutines.ios)
-                implementation(libs.sqldelight.jvm)
+                implementation(libs.sqldelight.native)
             }
         }
 
