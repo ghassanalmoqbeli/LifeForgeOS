@@ -1,6 +1,5 @@
 package com.lifeforge.os.core.preferences
 
-import kotlin.jvm.JvmName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,8 +53,7 @@ class FileKeyValueStore(
         listeners[key]?.value = value?.toString()
     }
 
-    @JvmName("observeStringNullable")
-    override fun observeString(key: String, default: String?): Flow<String?> =
+    override fun observeStringNullable(key: String, default: String?): Flow<String?> =
         node(key).map { it ?: default }
 
     override fun observeString(key: String, default: String): Flow<String> =

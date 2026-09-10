@@ -1,6 +1,5 @@
 package com.lifeforge.os.core.preferences
 
-import kotlin.jvm.JvmName
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -15,8 +14,7 @@ class InMemoryKeyValueStore : KeyValueStore {
     private val floats = MutableStateFlow<Map<String, Float>>(emptyMap())
     private val booleans = MutableStateFlow<Map<String, Boolean>>(emptyMap())
 
-    @JvmName("observeStringNullable")
-    override fun observeString(key: String, default: String?): Flow<String?> =
+    override fun observeStringNullable(key: String, default: String?): Flow<String?> =
         strings.map { it[key] ?: default }
 
     override fun observeString(key: String, default: String): Flow<String> =

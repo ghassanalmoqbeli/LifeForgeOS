@@ -20,11 +20,11 @@ class PreferencesManagerImpl(
     override val dashboardStyle: Flow<DashboardStyle> = store.observeString("dashboard_style", "Cards").map { DashboardStyle.valueOf(it) }
 
     // Profile
-    override val userName: Flow<String?> = store.observeString("user_name", null)
+    override val userName: Flow<String?> = store.observeStringNullable("user_name", null)
     override val userAge: Flow<Int?> = store.observeInt("user_age", -1).map { it.takeIf { x -> x > 0 } }
-    override val userHeight: Flow<String?> = store.observeString("user_height", null)
-    override val userWeight: Flow<String?> = store.observeString("user_weight", null)
-    override val userGoalWeight: Flow<String?> = store.observeString("user_goal_weight", null)
+    override val userHeight: Flow<String?> = store.observeStringNullable("user_height", null)
+    override val userWeight: Flow<String?> = store.observeStringNullable("user_weight", null)
+    override val userGoalWeight: Flow<String?> = store.observeStringNullable("user_goal_weight", null)
     override val units: Flow<Units> = store.observeString("units", "Metric").map { Units.valueOf(it) }
     override val caloriesGoal: Flow<Int> = store.observeInt("calories_goal", 2400)
     override val proteinGoal: Flow<Int> = store.observeInt("protein_goal", 180)
@@ -32,7 +32,7 @@ class PreferencesManagerImpl(
 
     // App Lock
     override val appLockEnabled: Flow<Boolean> = store.observeBoolean("app_lock_enabled", false)
-    override val appLockPinHash: Flow<String?> = store.observeString("app_lock_pin_hash", null)
+    override val appLockPinHash: Flow<String?> = store.observeStringNullable("app_lock_pin_hash", null)
     override val appLockBiometricEnabled: Flow<Boolean> = store.observeBoolean("app_lock_biometric", true)
     override val appLockTimeout: Flow<Long> = store.observeLong("app_lock_timeout", 300_000L)
     override val appLockOnBackground: Flow<Boolean> = store.observeBoolean("app_lock_on_background", true)
@@ -40,7 +40,7 @@ class PreferencesManagerImpl(
     // Private Mode
     override val privateModeEnabled: Flow<Boolean> = store.observeBoolean("private_mode_enabled", false)
     override val hiddenSections: Flow<Set<String>> =
-        store.observeString("hidden_sections", null).map { it?.split(",")?.filter(String::isNotBlank)?.toSet() ?: emptySet() }
+        store.observeStringNullable("hidden_sections", null).map { it?.split(",")?.filter(String::isNotBlank)?.toSet() ?: emptySet() }
 
     // Sync
     override val syncEnabled: Flow<Boolean> = store.observeBoolean("sync_enabled", false)
@@ -64,8 +64,8 @@ class PreferencesManagerImpl(
     override val language: Flow<String> = store.observeString("language", "ar")
 
     // Dashboard
-    override val dashboardLayout: Flow<String?> = store.observeString("dashboard_layout", null)
-    override val dashboardWidgets: Flow<String?> = store.observeString("dashboard_widgets", null)
+    override val dashboardLayout: Flow<String?> = store.observeStringNullable("dashboard_layout", null)
+    override val dashboardWidgets: Flow<String?> = store.observeStringNullable("dashboard_widgets", null)
 
     // Onboarding
     override val onboardingCompleted: Flow<Boolean> = store.observeBoolean("onboarding_completed", false)

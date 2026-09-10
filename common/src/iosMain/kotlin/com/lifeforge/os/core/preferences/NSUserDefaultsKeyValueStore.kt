@@ -36,7 +36,7 @@ class NSUserDefaultsKeyValueStore(
         return result
     }
 
-    override fun observeString(key: String, default: String?): Flow<String?> =
+    override fun observeStringNullable(key: String, default: String?): Flow<String?> =
         strings.map { it[key] ?: default }
 
     override fun observeString(key: String, default: String): Flow<String> =
