@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">لايف فورج أو إس</string>
+    <string name="widget_daily_overview">النظرة اليومية</string>
+    <string name="widget_water">الماء: %1$d مل</string>
+    <string name="widget_empty">لا توجد بيانات بعد</string>
+</resources>

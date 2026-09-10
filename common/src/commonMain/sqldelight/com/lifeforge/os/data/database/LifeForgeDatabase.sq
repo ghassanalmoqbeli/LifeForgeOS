@@ -1,0 +1,1901 @@
+-- LifeForge OS Database Schema
+-- SQLDelight generates type-safe Kotlin APIs from this schema
+
+-- ============================================================
+-- CORE / USER
+-- ============================================================
+
+CREATE TABLE UserProfile (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    age INTEGER,
+    height TEXT,
+    weight TEXT,
+    goalWeight TEXT,
+    units TEXT NOT NULL DEFAULT 'Metric',
+    caloriesGoal INTEGER NOT NULL DEFAULT 2400,
+    proteinGoal INTEGER NOT NULL DEFAULT 180,
+    waterGoal INTEGER NOT NULL DEFAULT 3000,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000)
+);
+
+CREATE INDEX idx_UserProfile_updatedAt ON UserProfile(updatedAt);
+
+-- ============================================================
+-- GYM / FITNESS
+-- ============================================================
+
+CREATE TABLE Exercise (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    nameAr TEXT,
+    nameEn TEXT,
+    mainMuscle TEXT NOT NULL,
+    secondaryMuscles TEXT, -- JSON array
+    equipment TEXT,
+    difficulty TEXT,
+    description TEXT,
+    instructions TEXT, -- JSON array
+    tips TEXT,
+    imageUrl TEXT,
+    imageUrls TEXT, -- JSON array
+    videoUrl TEXT,
+    externalLink TEXT,
+    tags TEXT, -- JSON array
+    isFavorite INTEGER NOT NULL DEFAULT 0,
+    notes TEXT,
+    isCustom INTEGER NOT NULL DEFAULT 0,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_Exercise_mainMuscle ON Exercise(mainMuscle);
+CREATE INDEX idx_Exercise_equipment ON Exercise(equipment);
+CREATE INDEX idx_Exercise_isFavorite ON Exercise(isFavorite);
+CREATE INDEX idx_Exercise_isCustom ON Exercise(isCustom);
+CREATE INDEX idx_Exercise_syncStatus ON Exercise(syncStatus);
+CREATE INDEX idx_Exercise_deletedAt ON Exercise(deletedAt);
+
+CREATE TABLE WorkoutProgram (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    nameAr TEXT,
+    description TEXT,
+    type TEXT NOT NULL, -- PushPullLegs, UpperLower, FullBody, Custom
+    daysPerWeek INTEGER NOT NULL,
+    isActive INTEGER NOT NULL DEFAULT 0,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_WorkoutProgram_isActive ON WorkoutProgram(isActive);
+CREATE INDEX idx_WorkoutProgram_syncStatus ON WorkoutProgram(syncStatus);
+
+CREATE TABLE WorkoutDay (
+    id TEXT NOT NULL PRIMARY KEY,
+    programId TEXT NOT NULL REFERENCES WorkoutProgram(id) ON DELETE CASCADE,
+    dayIndex INTEGER NOT NULL, -- 0-6
+    name TEXT NOT NULL,
+    nameAr TEXT,
+    notes TEXT,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_WorkoutDay_programId ON WorkoutDay(programId);
+CREATE INDEX idx_WorkoutDay_syncStatus ON WorkoutDay(syncStatus);
+
+CREATE TABLE WorkoutExercise (
+    id TEXT NOT NULL PRIMARY KEY,
+    dayId TEXT NOT NULL REFERENCES WorkoutDay(id) ON DELETE CASCADE,
+    exerciseId TEXT NOT NULL REFERENCES Exercise(id),
+    exerciseOrder INTEGER NOT NULL,
+    setsTarget INTEGER NOT NULL DEFAULT 3,
+    repsTarget TEXT NOT NULL, -- "8-12" or "10"
+    weightTarget TEXT, -- "80kg" or "bodyweight"
+    restSeconds INTEGER NOT NULL DEFAULT 90,
+    notes TEXT,
+    isSuperset INTEGER NOT NULL DEFAULT 0,
+    supersetGroup TEXT,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_WorkoutExercise_dayId ON WorkoutExercise(dayId);
+CREATE INDEX idx_WorkoutExercise_exerciseId ON WorkoutExercise(exerciseId);
+CREATE INDEX idx_WorkoutExercise_syncStatus ON WorkoutExercise(syncStatus);
+
+CREATE TABLE WorkoutSession (
+    id TEXT NOT NULL PRIMARY KEY,
+    programId TEXT REFERENCES WorkoutProgram(id),
+    dayId TEXT REFERENCES WorkoutDay(id),
+    name TEXT, -- Custom workout name
+    startedAt INTEGER NOT NULL,
+    completedAt INTEGER,
+    durationSeconds INTEGER,
+    totalVolume REAL,
+    totalSets INTEGER,
+    totalReps INTEGER,
+    notes TEXT,
+    isCompleted INTEGER NOT NULL DEFAULT 0,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_WorkoutSession_startedAt ON WorkoutSession(startedAt);
+CREATE INDEX idx_WorkoutSession_programId ON WorkoutSession(programId);
+CREATE INDEX idx_WorkoutSession_isCompleted ON WorkoutSession(isCompleted);
+CREATE INDEX idx_WorkoutSession_syncStatus ON WorkoutSession(syncStatus);
+
+CREATE TABLE WorkoutSet (
+    id TEXT NOT NULL PRIMARY KEY,
+    sessionId TEXT NOT NULL REFERENCES WorkoutSession(id) ON DELETE CASCADE,
+    exerciseId TEXT NOT NULL REFERENCES Exercise(id),
+    setIndex INTEGER NOT NULL,
+    weight REAL,
+    reps INTEGER,
+    rpe REAL, -- Rate of Perceived Exertion 1-10
+    restSeconds INTEGER,
+    isCompleted INTEGER NOT NULL DEFAULT 0,
+    isWarmup INTEGER NOT NULL DEFAULT 0,
+    isDropSet INTEGER NOT NULL DEFAULT 0,
+    notes TEXT,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_WorkoutSet_sessionId ON WorkoutSet(sessionId);
+CREATE INDEX idx_WorkoutSet_exerciseId ON WorkoutSet(exerciseId);
+CREATE INDEX idx_WorkoutSet_syncStatus ON WorkoutSet(syncStatus);
+
+CREATE TABLE WorkoutRecord (
+    id TEXT NOT NULL PRIMARY KEY,
+    exerciseId TEXT NOT NULL REFERENCES Exercise(id),
+    type TEXT NOT NULL, -- PR_Weight, PR_Reps, PR_Volume, PR_1RM
+    value REAL NOT NULL,
+    previousValue REAL,
+    unit TEXT NOT NULL, -- kg, lbs, reps
+    achievedAt INTEGER NOT NULL,
+    sessionId TEXT REFERENCES WorkoutSession(id),
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_WorkoutRecord_exerciseId ON WorkoutRecord(exerciseId);
+CREATE INDEX idx_WorkoutRecord_type ON WorkoutRecord(type);
+CREATE INDEX idx_WorkoutRecord_achievedAt ON WorkoutRecord(achievedAt);
+
+-- ============================================================
+-- BODY TRACKING
+-- ============================================================
+
+CREATE TABLE BodyMeasurement (
+    id TEXT NOT NULL PRIMARY KEY,
+    date INTEGER NOT NULL, -- Date as timestamp (midnight)
+    weight REAL,
+    bodyFat REAL,
+    chest REAL,
+    waist REAL,
+    arms REAL,
+    thighs REAL,
+    neck REAL,
+    shoulders REAL,
+    calves REAL,
+    forearms REAL,
+    notes TEXT,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_BodyMeasurement_date ON BodyMeasurement(date);
+CREATE INDEX idx_BodyMeasurement_syncStatus ON BodyMeasurement(syncStatus);
+
+CREATE TABLE ProgressPhoto (
+    id TEXT NOT NULL PRIMARY KEY,
+    date INTEGER NOT NULL,
+    type TEXT NOT NULL, -- Front, Side, Back
+    localPath TEXT NOT NULL,
+    cloudUrl TEXT,
+    thumbnailPath TEXT,
+    notes TEXT,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_ProgressPhoto_date ON ProgressPhoto(date);
+CREATE INDEX idx_ProgressPhoto_type ON ProgressPhoto(type);
+
+-- ============================================================
+-- NUTRITION
+-- ============================================================
+
+CREATE TABLE Food (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    nameAr TEXT,
+    servingSize TEXT NOT NULL, -- "100g", "1 cup", etc.
+    calories REAL NOT NULL,
+    protein REAL NOT NULL,
+    carbs REAL NOT NULL,
+    fat REAL NOT NULL,
+    fiber REAL,
+    sugar REAL,
+    sodium REAL,
+    isCustom INTEGER NOT NULL DEFAULT 1,
+    isFavorite INTEGER NOT NULL DEFAULT 0,
+    recentlyUsedAt INTEGER,
+    useCount INTEGER NOT NULL DEFAULT 0,
+    notes TEXT,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_Food_name ON Food(name);
+CREATE INDEX idx_Food_isFavorite ON Food(isFavorite);
+CREATE INDEX idx_Food_recentlyUsedAt ON Food(recentlyUsedAt);
+CREATE INDEX idx_Food_syncStatus ON Food(syncStatus);
+
+CREATE TABLE Meal (
+    id TEXT NOT NULL PRIMARY KEY,
+    date INTEGER NOT NULL, -- Date as timestamp (midnight)
+    type TEXT NOT NULL, -- Breakfast, Lunch, Dinner, Snack, Custom
+    customType TEXT,
+    time INTEGER NOT NULL, -- Time of day in milliseconds
+    name TEXT,
+    imageUrl TEXT,
+    notes TEXT,
+    totalCalories REAL NOT NULL DEFAULT 0,
+    totalProtein REAL NOT NULL DEFAULT 0,
+    totalCarbs REAL NOT NULL DEFAULT 0,
+    totalFat REAL NOT NULL DEFAULT 0,
+    totalFiber REAL NOT NULL DEFAULT 0,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_Meal_date ON Meal(date);
+CREATE INDEX idx_Meal_type ON Meal(type);
+CREATE INDEX idx_Meal_syncStatus ON Meal(syncStatus);
+
+CREATE TABLE MealItem (
+    id TEXT NOT NULL PRIMARY KEY,
+    mealId TEXT NOT NULL REFERENCES Meal(id) ON DELETE CASCADE,
+    foodId TEXT NOT NULL REFERENCES Food(id),
+    servingSize REAL NOT NULL, -- Multiplier for food serving (e.g., 1.5 for 150g if serving is 100g)
+    calories REAL NOT NULL,
+    protein REAL NOT NULL,
+    carbs REAL NOT NULL,
+    fat REAL NOT NULL,
+    fiber REAL,
+    sugar REAL,
+    sodium REAL,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_MealItem_mealId ON MealItem(mealId);
+CREATE INDEX idx_MealItem_foodId ON MealItem(foodId);
+
+CREATE TABLE WaterLog (
+    id TEXT NOT NULL PRIMARY KEY,
+    date INTEGER NOT NULL, -- Date as timestamp (midnight)
+    time INTEGER NOT NULL, -- Time of day
+    amountMl INTEGER NOT NULL,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_WaterLog_date ON WaterLog(date);
+
+-- ============================================================
+-- HABITS & ROUTINES
+-- ============================================================
+
+CREATE TABLE Habit (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    nameAr TEXT,
+    icon TEXT,
+    color TEXT,
+    description TEXT,
+    frequency TEXT NOT NULL, -- Daily, Weekdays, Weekends, Custom
+    customFrequency TEXT, -- JSON for custom days
+    targetValue REAL, -- For quantitative habits
+    targetUnit TEXT,
+    reminderTime INTEGER, -- Time of day in milliseconds
+    reminderDays TEXT, -- JSON array of days
+    isActive INTEGER NOT NULL DEFAULT 1,
+    startDate INTEGER NOT NULL,
+    endDate INTEGER,
+    currentStreak INTEGER NOT NULL DEFAULT 0,
+    bestStreak INTEGER NOT NULL DEFAULT 0,
+    totalCompletions INTEGER NOT NULL DEFAULT 0,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_Habit_isActive ON Habit(isActive);
+CREATE INDEX idx_Habit_startDate ON Habit(startDate);
+CREATE INDEX idx_Habit_syncStatus ON Habit(syncStatus);
+
+CREATE TABLE HabitLog (
+    id TEXT NOT NULL PRIMARY KEY,
+    habitId TEXT NOT NULL REFERENCES Habit(id) ON DELETE CASCADE,
+    date INTEGER NOT NULL, -- Date as timestamp (midnight)
+    value REAL, -- Actual value for quantitative habits
+    isCompleted INTEGER NOT NULL DEFAULT 1,
+    notes TEXT,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced',
+    UNIQUE(habitId, date)
+);
+
+CREATE INDEX idx_HabitLog_habitId ON HabitLog(habitId);
+CREATE INDEX idx_HabitLog_date ON HabitLog(date);
+CREATE INDEX idx_HabitLog_syncStatus ON HabitLog(syncStatus);
+
+CREATE TABLE Routine (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    nameAr TEXT,
+    type TEXT NOT NULL, -- Morning, Workout, Study, Night, Recovery, Custom
+    description TEXT,
+    isActive INTEGER NOT NULL DEFAULT 1,
+    daysOfWeek TEXT, -- JSON array [1,2,3,4,5,6,7] for Mon-Sun
+    startTime INTEGER, -- Default start time
+    estimatedDuration INTEGER, -- Total estimated minutes
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_Routine_isActive ON Routine(isActive);
+CREATE INDEX idx_Routine_type ON Routine(type);
+CREATE INDEX idx_Routine_syncStatus ON Routine(syncStatus);
+
+CREATE TABLE RoutineItem (
+    id TEXT NOT NULL PRIMARY KEY,
+    routineId TEXT NOT NULL REFERENCES Routine(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    nameAr TEXT,
+    time INTEGER NOT NULL, -- Time of day in milliseconds
+    durationMinutes INTEGER,
+    itemOrder INTEGER NOT NULL,
+    repeatDays TEXT, -- JSON array
+    reminderEnabled INTEGER NOT NULL DEFAULT 0,
+    reminderTime INTEGER,
+    isCompleted INTEGER NOT NULL DEFAULT 0,
+    linkedHabitId TEXT REFERENCES Habit(id),
+    linkedTaskId TEXT, -- Reference to Task
+    notes TEXT,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_RoutineItem_routineId ON RoutineItem(routineId);
+CREATE INDEX idx_RoutineItem_itemOrder ON RoutineItem(itemOrder);
+CREATE INDEX idx_RoutineItem_syncStatus ON RoutineItem(syncStatus);
+
+-- ============================================================
+-- TASKS & GOALS
+-- ============================================================
+
+CREATE TABLE Task (
+    id TEXT NOT NULL PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT,
+    date INTEGER, -- Due date (midnight timestamp)
+    time INTEGER, -- Due time
+    priority TEXT NOT NULL DEFAULT 'Medium', -- Low, Medium, High, Urgent
+    category TEXT,
+    listId TEXT REFERENCES TaskList(id),
+    isRecurring INTEGER NOT NULL DEFAULT 0,
+    recurrenceRule TEXT, -- RRULE format
+    parentTaskId TEXT REFERENCES Task(id), -- For recurring instances
+    isCompleted INTEGER NOT NULL DEFAULT 0,
+    completedAt INTEGER,
+    reminderEnabled INTEGER NOT NULL DEFAULT 0,
+    reminderTime INTEGER,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_Task_date ON Task(date);
+CREATE INDEX idx_Task_listId ON Task(listId);
+CREATE INDEX idx_Task_isCompleted ON Task(isCompleted);
+CREATE INDEX idx_Task_priority ON Task(priority);
+CREATE INDEX idx_Task_syncStatus ON Task(syncStatus);
+
+CREATE TABLE TaskList (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    nameAr TEXT,
+    color TEXT,
+    icon TEXT,
+    isDefault INTEGER NOT NULL DEFAULT 0,
+    sortOrder INTEGER NOT NULL DEFAULT 0,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_TaskList_sortOrder ON TaskList(sortOrder);
+
+CREATE TABLE Goal (
+    id TEXT NOT NULL PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT,
+    category TEXT NOT NULL, -- Fitness, Nutrition, Reading, Learning, Recovery, Personal, Other
+    targetValue REAL NOT NULL,
+    currentValue REAL NOT NULL DEFAULT 0,
+    unit TEXT,
+    deadline INTEGER, -- Timestamp
+    startDate INTEGER NOT NULL,
+    isActive INTEGER NOT NULL DEFAULT 1,
+    progress REAL NOT NULL DEFAULT 0, -- 0-100
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_Goal_category ON Goal(category);
+CREATE INDEX idx_Goal_isActive ON Goal(isActive);
+CREATE INDEX idx_Goal_deadline ON Goal(deadline);
+
+CREATE TABLE GoalMilestone (
+    id TEXT NOT NULL PRIMARY KEY,
+    goalId TEXT NOT NULL REFERENCES Goal(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    targetValue REAL NOT NULL,
+    isCompleted INTEGER NOT NULL DEFAULT 0,
+    completedAt INTEGER,
+    milestoneOrder INTEGER NOT NULL,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_GoalMilestone_goalId ON GoalMilestone(goalId);
+
+-- ============================================================
+-- JOURNAL & NOTES
+-- ============================================================
+
+CREATE TABLE JournalEntry (
+    id TEXT NOT NULL PRIMARY KEY,
+    date INTEGER NOT NULL, -- Date as timestamp (midnight)
+    title TEXT,
+    content TEXT NOT NULL,
+    mood TEXT,
+    energy INTEGER, -- 1-10
+    stress INTEGER, -- 1-10
+    tags TEXT, -- JSON array
+    images TEXT, -- JSON array of paths/URLs
+    isPrivate INTEGER NOT NULL DEFAULT 0,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_JournalEntry_date ON JournalEntry(date);
+CREATE INDEX idx_JournalEntry_isPrivate ON JournalEntry(isPrivate);
+CREATE INDEX idx_JournalEntry_syncStatus ON JournalEntry(syncStatus);
+
+CREATE TABLE Note (
+    id TEXT NOT NULL PRIMARY KEY,
+    type TEXT NOT NULL DEFAULT 'Quick', -- Quick, Rich, Checklist, Idea, Personal, Study, Workout, Nutrition, Recovery, Book, Course
+    title TEXT,
+    content TEXT, -- JSON for rich content
+    plainText TEXT, -- For search
+    isPinned INTEGER NOT NULL DEFAULT 0,
+    isPrivate INTEGER NOT NULL DEFAULT 0,
+    tags TEXT, -- JSON array
+    images TEXT, -- JSON array
+    links TEXT, -- JSON array
+    linkedEntityType TEXT, -- Workout, Book, Course, Movie, Habit, Goal, Journal, Recovery, Task
+    linkedEntityId TEXT,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_Note_type ON Note(type);
+CREATE INDEX idx_Note_isPinned ON Note(isPinned);
+CREATE INDEX idx_Note_isPrivate ON Note(isPrivate);
+CREATE INDEX idx_Note_linkedEntity ON Note(linkedEntityType, linkedEntityId);
+CREATE INDEX idx_Note_syncStatus ON Note(syncStatus);
+
+CREATE TABLE NoteTag (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    color TEXT,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000)
+);
+
+-- ============================================================
+-- BOOKS & READING
+-- ============================================================
+
+CREATE TABLE Book (
+    id TEXT NOT NULL PRIMARY KEY,
+    title TEXT NOT NULL,
+    author TEXT NOT NULL,
+    coverUrl TEXT,
+    description TEXT,
+    category TEXT,
+    tags TEXT, -- JSON array
+    link TEXT, -- Purchase/Info link
+    format TEXT, -- Physical, Kindle, PDF, EPUB, Audiobook
+    totalPages INTEGER,
+    currentPage INTEGER NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'WantToRead', -- WantToRead, Reading, Completed, Paused, Dropped
+    rating REAL, -- 1-10
+    review TEXT,
+    favoriteCharacter TEXT,
+    favoriteScene TEXT,
+    notes TEXT,
+    startDate INTEGER,
+    completedDate INTEGER,
+    isFavorite INTEGER NOT NULL DEFAULT 0,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_Book_status ON Book(status);
+CREATE INDEX idx_Book_author ON Book(author);
+CREATE INDEX idx_Book_isFavorite ON Book(isFavorite);
+CREATE INDEX idx_Book_syncStatus ON Book(syncStatus);
+
+CREATE TABLE BookFile (
+    id TEXT NOT NULL PRIMARY KEY,
+    bookId TEXT NOT NULL REFERENCES Book(id) ON DELETE CASCADE,
+    format TEXT NOT NULL, -- PDF, EPUB
+    localPath TEXT NOT NULL,
+    cloudUrl TEXT,
+    fileSize INTEGER,
+    totalPages INTEGER,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_BookFile_bookId ON BookFile(bookId);
+
+CREATE TABLE ReadingSession (
+    id TEXT NOT NULL PRIMARY KEY,
+    bookId TEXT NOT NULL REFERENCES Book(id) ON DELETE CASCADE,
+    startPage INTEGER NOT NULL,
+    endPage INTEGER NOT NULL,
+    startTime INTEGER NOT NULL,
+    endTime INTEGER NOT NULL,
+    durationMinutes INTEGER NOT NULL,
+    pagesRead INTEGER NOT NULL,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_ReadingSession_bookId ON ReadingSession(bookId);
+CREATE INDEX idx_ReadingSession_startTime ON ReadingSession(startTime);
+
+CREATE TABLE Bookmark (
+    id TEXT NOT NULL PRIMARY KEY,
+    bookId TEXT NOT NULL REFERENCES Book(id) ON DELETE CASCADE,
+    page INTEGER NOT NULL,
+    location TEXT, -- CFI for EPUB, page for PDF
+    title TEXT,
+    note TEXT,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000)
+);
+
+CREATE INDEX idx_Bookmark_bookId ON Bookmark(bookId);
+
+CREATE TABLE Highlight (
+    id TEXT NOT NULL PRIMARY KEY,
+    bookId TEXT NOT NULL REFERENCES Book(id) ON DELETE CASCADE,
+    page INTEGER NOT NULL,
+    locationStart TEXT,
+    locationEnd TEXT,
+    text TEXT NOT NULL,
+    color TEXT, -- Yellow, Green, Blue, Pink, Purple
+    note TEXT,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_Highlight_bookId ON Highlight(bookId);
+
+-- ============================================================
+-- COURSES & LEARNING
+-- ============================================================
+
+CREATE TABLE Course (
+    id TEXT NOT NULL PRIMARY KEY,
+    title TEXT NOT NULL,
+    provider TEXT,
+    instructor TEXT,
+    thumbnailUrl TEXT,
+    description TEXT,
+    url TEXT,
+    category TEXT,
+    difficulty TEXT, -- Beginner, Intermediate, Advanced
+    totalLessons INTEGER,
+    estimatedDurationMinutes INTEGER,
+    startDate INTEGER,
+    targetDate INTEGER,
+    status TEXT NOT NULL DEFAULT 'NotStarted', -- NotStarted, InProgress, Completed, Paused, Dropped
+    progress REAL NOT NULL DEFAULT 0, -- 0-100
+    notes TEXT,
+    isFavorite INTEGER NOT NULL DEFAULT 0,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_Course_status ON Course(status);
+CREATE INDEX idx_Course_category ON Course(category);
+CREATE INDEX idx_Course_isFavorite ON Course(isFavorite);
+CREATE INDEX idx_Course_syncStatus ON Course(syncStatus);
+
+CREATE TABLE CourseSection (
+    id TEXT NOT NULL PRIMARY KEY,
+    courseId TEXT NOT NULL REFERENCES Course(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    sectionOrder INTEGER NOT NULL,
+    description TEXT,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_CourseSection_courseId ON CourseSection(courseId);
+CREATE INDEX idx_CourseSection_sectionOrder ON CourseSection(sectionOrder);
+
+CREATE TABLE CourseLesson (
+    id TEXT NOT NULL PRIMARY KEY,
+    sectionId TEXT NOT NULL REFERENCES CourseSection(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    lessonOrder INTEGER NOT NULL,
+    videoUrl TEXT,
+    durationMinutes INTEGER,
+    content TEXT, -- Text content/notes
+    isCompleted INTEGER NOT NULL DEFAULT 0,
+    completedAt INTEGER,
+    lastPosition INTEGER, -- Video position in seconds
+    progress REAL NOT NULL DEFAULT 0, -- 0-100
+    notes TEXT,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_CourseLesson_sectionId ON CourseLesson(sectionId);
+CREATE INDEX idx_CourseLesson_isCompleted ON CourseLesson(isCompleted);
+CREATE INDEX idx_CourseLesson_syncStatus ON CourseLesson(syncStatus);
+
+-- ============================================================
+-- ENTERTAINMENT
+-- ============================================================
+
+CREATE TABLE MediaItem (
+    id TEXT NOT NULL PRIMARY KEY,
+    type TEXT NOT NULL, -- Movie, TVShow, Anime, Game, Video, Podcast, Music
+    title TEXT NOT NULL,
+    titleAr TEXT,
+    imageUrl TEXT,
+    backdropUrl TEXT,
+    description TEXT,
+    externalUrl TEXT,
+    status TEXT NOT NULL DEFAULT 'WantToWatch', -- WantToWatch, Watching, Completed, Paused, Dropped
+    rating REAL, -- 1-10
+    personalRating REAL, -- 1-10
+    review TEXT,
+    liked TEXT,
+    disliked TEXT,
+    favoriteCharacter TEXT,
+    favoriteScene TEXT,
+    notes TEXT,
+    tags TEXT, -- JSON array
+    isFavorite INTEGER NOT NULL DEFAULT 0,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_MediaItem_type ON MediaItem(type);
+CREATE INDEX idx_MediaItem_status ON MediaItem(status);
+CREATE INDEX idx_MediaItem_isFavorite ON MediaItem(isFavorite);
+CREATE INDEX idx_MediaItem_syncStatus ON MediaItem(syncStatus);
+
+CREATE TABLE Movie (
+    id TEXT NOT NULL PRIMARY KEY REFERENCES MediaItem(id) ON DELETE CASCADE,
+    releaseYear INTEGER,
+    runtime INTEGER, -- Minutes
+    genres TEXT, -- JSON array
+    director TEXT,
+    cast TEXT, -- JSON array
+    trailerUrl TEXT,
+    imdbId TEXT,
+    tmdbId TEXT
+);
+
+CREATE TABLE TVShow (
+    id TEXT NOT NULL PRIMARY KEY REFERENCES MediaItem(id) ON DELETE CASCADE,
+    firstAirYear INTEGER,
+    lastAirYear INTEGER,
+    numberOfSeasons INTEGER,
+    numberOfEpisodes INTEGER,
+    genres TEXT, -- JSON array
+    creators TEXT, -- JSON array
+    cast TEXT, -- JSON array
+    imdbId TEXT,
+    tmdbId TEXT
+);
+
+CREATE TABLE TVSeason (
+    id TEXT NOT NULL PRIMARY KEY,
+    showId TEXT NOT NULL REFERENCES TVShow(id) ON DELETE CASCADE,
+    seasonNumber INTEGER NOT NULL,
+    name TEXT,
+    overview TEXT,
+    airDate INTEGER,
+    episodeCount INTEGER,
+    posterUrl TEXT,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_TVSeason_showId ON TVSeason(showId);
+
+CREATE TABLE TVEpisode (
+    id TEXT NOT NULL PRIMARY KEY,
+    seasonId TEXT NOT NULL REFERENCES TVSeason(id) ON DELETE CASCADE,
+    episodeNumber INTEGER NOT NULL,
+    title TEXT,
+    overview TEXT,
+    airDate INTEGER,
+    runtime INTEGER,
+    imageUrl TEXT,
+    isWatched INTEGER NOT NULL DEFAULT 0,
+    watchedAt INTEGER,
+    rating REAL,
+    notes TEXT,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_TVEpisode_seasonId ON TVEpisode(seasonId);
+CREATE INDEX idx_TVEpisode_isWatched ON TVEpisode(isWatched);
+
+CREATE TABLE Anime (
+    id TEXT NOT NULL PRIMARY KEY REFERENCES MediaItem(id) ON DELETE CASCADE,
+    type TEXT, -- TV, Movie, OVA, Special, ONA, Music
+    episodes INTEGER,
+    status TEXT, -- Finished Airing, Currently Airing, Not Yet Aired
+    season TEXT, -- Winter, Spring, Summer, Fall + Year
+    genres TEXT, -- JSON array
+    studios TEXT, -- JSON array
+    source TEXT, -- Manga, Light Novel, Original, etc.
+    malId INTEGER,
+    anilistId INTEGER
+);
+
+CREATE TABLE Game (
+    id TEXT NOT NULL PRIMARY KEY REFERENCES MediaItem(id) ON DELETE CASCADE,
+    platform TEXT, -- PC, PlayStation, Xbox, Nintendo, Mobile, Other
+    genre TEXT,
+    releaseYear INTEGER,
+    developer TEXT,
+    publisher TEXT,
+    playtimeHours REAL,
+    completionPercent REAL, -- 0-100
+    igdbId INTEGER
+);
+
+CREATE TABLE Video (
+    id TEXT NOT NULL PRIMARY KEY REFERENCES MediaItem(id) ON DELETE CASCADE,
+    platform TEXT, -- YouTube, Vimeo, Local, Other
+    channel TEXT,
+    duration INTEGER, -- Seconds
+    publishedAt INTEGER,
+    videoId TEXT, -- Platform-specific ID
+    thumbnailUrl TEXT
+);
+
+CREATE TABLE Podcast (
+    id TEXT NOT NULL PRIMARY KEY REFERENCES MediaItem(id) ON DELETE CASCADE,
+    podcastName TEXT,
+    episodeTitle TEXT,
+    episodeNumber INTEGER,
+    seasonNumber INTEGER,
+    audioUrl TEXT,
+    duration INTEGER, -- Seconds
+    publishedAt INTEGER,
+    podcastImageUrl TEXT
+);
+
+CREATE TABLE Music (
+    id TEXT NOT NULL PRIMARY KEY REFERENCES MediaItem(id) ON DELETE CASCADE,
+    song TEXT,
+    album TEXT,
+    artist TEXT,
+    playlist TEXT,
+    audioUrl TEXT,
+    duration INTEGER, -- Seconds
+    trackNumber INTEGER,
+    year INTEGER,
+    genre TEXT
+);
+
+CREATE TABLE Watchlist (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    nameAr TEXT,
+    description TEXT,
+    type TEXT, -- Movies, TVShows, Anime, Games, Videos, Podcasts, Music, Mixed, Recovery
+    isDefault INTEGER NOT NULL DEFAULT 0,
+    sortOrder INTEGER NOT NULL DEFAULT 0,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_Watchlist_type ON Watchlist(type);
+
+CREATE TABLE WatchlistItem (
+    id TEXT NOT NULL PRIMARY KEY,
+    watchlistId TEXT NOT NULL REFERENCES Watchlist(id) ON DELETE CASCADE,
+    mediaItemId TEXT NOT NULL REFERENCES MediaItem(id) ON DELETE CASCADE,
+    itemOrder INTEGER NOT NULL,
+    addedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000)
+);
+
+CREATE INDEX idx_WatchlistItem_watchlistId ON WatchlistItem(watchlistId);
+CREATE INDEX idx_WatchlistItem_mediaItemId ON WatchlistItem(mediaItemId);
+
+CREATE TABLE Collection (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    nameAr TEXT,
+    description TEXT,
+    coverUrl TEXT,
+    type TEXT, -- Movies, TVShows, Books, Games, Mixed
+    isPublic INTEGER NOT NULL DEFAULT 0,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE TABLE CollectionItem (
+    id TEXT NOT NULL PRIMARY KEY,
+    collectionId TEXT NOT NULL REFERENCES Collection(id) ON DELETE CASCADE,
+    mediaItemId TEXT REFERENCES MediaItem(id) ON DELETE CASCADE,
+    bookId TEXT REFERENCES Book(id) ON DELETE CASCADE,
+    itemOrder INTEGER NOT NULL,
+    addedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000)
+);
+
+CREATE INDEX idx_CollectionItem_collectionId ON CollectionItem(collectionId);
+
+CREATE TABLE WatchHistory (
+    id TEXT NOT NULL PRIMARY KEY,
+    mediaItemId TEXT NOT NULL REFERENCES MediaItem(id) ON DELETE CASCADE,
+    watchedAt INTEGER NOT NULL,
+    durationMinutes INTEGER,
+    progressPercent REAL, -- For partial watches
+    rating REAL,
+    notes TEXT,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000)
+);
+
+CREATE INDEX idx_WatchHistory_mediaItemId ON WatchHistory(mediaItemId);
+CREATE INDEX idx_WatchHistory_watchedAt ON WatchHistory(watchedAt);
+
+-- ============================================================
+-- RECOVERY
+-- ============================================================
+
+CREATE TABLE RecoveryEntry (
+    id TEXT NOT NULL PRIMARY KEY,
+    date INTEGER NOT NULL, -- Date as timestamp (midnight)
+    isRelapse INTEGER NOT NULL DEFAULT 0,
+    trigger TEXT,
+    mood TEXT,
+    environment TEXT,
+    whatHappened TEXT,
+    whatLearned TEXT,
+    notes TEXT,
+    streakAtTime INTEGER, -- Streak days at this entry
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_RecoveryEntry_date ON RecoveryEntry(date);
+CREATE INDEX idx_RecoveryEntry_isRelapse ON RecoveryEntry(isRelapse);
+CREATE INDEX idx_RecoveryEntry_syncStatus ON RecoveryEntry(syncStatus);
+
+CREATE TABLE RecoveryTask (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    nameAr TEXT,
+    description TEXT,
+    icon TEXT,
+    color TEXT,
+    category TEXT, -- Exercise, Read, Meditate, Walk, Journal, Sleep, AvoidTrigger, NoPhone, Custom
+    isDefault INTEGER NOT NULL DEFAULT 0,
+    isActive INTEGER NOT NULL DEFAULT 1,
+    sortOrder INTEGER NOT NULL DEFAULT 0,
+    targetValue REAL, -- For quantitative (e.g., 30 minutes)
+    targetUnit TEXT, -- minutes, times, etc.
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_RecoveryTask_isActive ON RecoveryTask(isActive);
+
+CREATE TABLE RecoveryTaskLog (
+    id TEXT NOT NULL PRIMARY KEY,
+    taskId TEXT NOT NULL REFERENCES RecoveryTask(id) ON DELETE CASCADE,
+    date INTEGER NOT NULL, -- Date as timestamp (midnight)
+    value REAL, -- Actual value
+    isCompleted INTEGER NOT NULL DEFAULT 1,
+    notes TEXT,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced',
+    UNIQUE(taskId, date)
+);
+
+CREATE INDEX idx_RecoveryTaskLog_taskId ON RecoveryTaskLog(taskId);
+CREATE INDEX idx_RecoveryTaskLog_date ON RecoveryTaskLog(date);
+
+CREATE TABLE RecoveryNote (
+    id TEXT NOT NULL PRIMARY KEY,
+    type TEXT NOT NULL, -- Trigger, Pattern, Lesson, Strategy, Thought
+    content TEXT NOT NULL,
+    tags TEXT, -- JSON array
+    linkedDate INTEGER, -- Related to specific date
+    isPrivate INTEGER NOT NULL DEFAULT 1,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_RecoveryNote_type ON RecoveryNote(type);
+
+CREATE TABLE RecoveryJournal (
+    id TEXT NOT NULL PRIMARY KEY,
+    date INTEGER NOT NULL, -- Date as timestamp (midnight)
+    mood INTEGER, -- 1-10
+    energy INTEGER, -- 1-10
+    stress INTEGER, -- 1-10
+    cravings INTEGER, -- 1-10
+    content TEXT,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_RecoveryJournal_date ON RecoveryJournal(date);
+
+-- ============================================================
+-- TIMERS
+-- ============================================================
+
+CREATE TABLE TimerPreset (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    nameAr TEXT,
+    type TEXT NOT NULL, -- Countdown, Stopwatch, RestTimer, Pomodoro, CustomInterval
+    phases TEXT NOT NULL, -- JSON array of phases {name, duration, color, sound}
+    totalDuration INTEGER, -- Total seconds for countdown
+    soundEnabled INTEGER NOT NULL DEFAULT 1,
+    vibrationEnabled INTEGER NOT NULL DEFAULT 1,
+    backgroundEnabled INTEGER NOT NULL DEFAULT 1,
+    isDefault INTEGER NOT NULL DEFAULT 0,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_TimerPreset_type ON TimerPreset(type);
+CREATE INDEX idx_TimerPreset_isDefault ON TimerPreset(isDefault);
+
+CREATE TABLE TimerSession (
+    id TEXT NOT NULL PRIMARY KEY,
+    presetId TEXT REFERENCES TimerPreset(id),
+    type TEXT NOT NULL,
+    startedAt INTEGER NOT NULL,
+    endedAt INTEGER,
+    plannedDuration INTEGER,
+    actualDuration INTEGER,
+    remainingSeconds INTEGER,
+    currentPhase INTEGER,
+    isCompleted INTEGER NOT NULL DEFAULT 0,
+    isRunning INTEGER NOT NULL DEFAULT 0,
+    stateJson TEXT, -- Full state for recovery
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_TimerSession_startedAt ON TimerSession(startedAt);
+CREATE INDEX idx_TimerSession_isRunning ON TimerSession(isRunning);
+
+-- ============================================================
+-- SETTINGS & SYNC
+-- ============================================================
+
+CREATE TABLE Settings (
+    key TEXT NOT NULL PRIMARY KEY,
+    value TEXT NOT NULL,
+    type TEXT NOT NULL, -- String, Int, Long, Float, Boolean, Json
+    category TEXT,
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'Synced'
+);
+
+CREATE INDEX idx_Settings_category ON Settings(category);
+
+CREATE TABLE SyncRecord (
+    entityType TEXT NOT NULL,
+    entityId TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'Synced', -- Synced, Syncing, Offline, Pending, Conflict, Error
+    version INTEGER NOT NULL DEFAULT 1,
+    deviceId TEXT NOT NULL,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    deletedAt INTEGER,
+    conflictData TEXT,
+    PRIMARY KEY (entityType, entityId)
+);
+
+CREATE INDEX idx_SyncRecord_status ON SyncRecord(status);
+CREATE INDEX idx_SyncRecord_updatedAt ON SyncRecord(updatedAt);
+
+CREATE TABLE SyncQueue (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    operationType TEXT NOT NULL, -- Upsert, Delete
+    entityType TEXT NOT NULL,
+    entityId TEXT NOT NULL,
+    data TEXT, -- JSON
+    priority TEXT NOT NULL DEFAULT 'Normal', -- Low, Normal, High
+    retryCount INTEGER NOT NULL DEFAULT 0,
+    scheduledAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000)
+);
+
+CREATE INDEX idx_SyncQueue_scheduledAt ON SyncQueue(scheduledAt);
+CREATE INDEX idx_SyncQueue_priority ON SyncQueue(priority);
+
+-- ============================================================
+-- BACKUP & METADATA
+-- ============================================================
+
+CREATE TABLE BackupMetadata (
+    id TEXT NOT NULL PRIMARY KEY,
+    fileName TEXT NOT NULL,
+    fileSize INTEGER NOT NULL,
+    recordCounts TEXT, -- JSON: {table: count}
+    schemaVersion INTEGER NOT NULL,
+    appVersion TEXT NOT NULL,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    isCloudBackup INTEGER NOT NULL DEFAULT 0,
+    cloudUrl TEXT
+);
+
+CREATE INDEX idx_BackupMetadata_createdAt ON BackupMetadata(createdAt);
+
+-- ============================================================
+-- ACHIEVEMENTS
+-- ============================================================
+
+CREATE TABLE Achievement (
+    id TEXT NOT NULL PRIMARY KEY,
+    key TEXT NOT NULL UNIQUE, -- e.g., first_workout, workout_100
+    category TEXT NOT NULL, -- Fitness, Nutrition, Habits, Reading, Learning, Recovery, Entertainment, General
+    title TEXT NOT NULL,
+    titleAr TEXT,
+    description TEXT,
+    descriptionAr TEXT,
+    icon TEXT,
+    tier TEXT NOT NULL DEFAULT 'Bronze', -- Bronze, Silver, Gold, Platinum, Diamond
+    requirementJson TEXT NOT NULL, -- JSON defining unlock criteria
+    isUnlocked INTEGER NOT NULL DEFAULT 0,
+    unlockedAt INTEGER,
+    progress REAL NOT NULL DEFAULT 0, -- 0-100
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000)
+);
+
+CREATE INDEX idx_Achievement_category ON Achievement(category);
+CREATE INDEX idx_Achievement_isUnlocked ON Achievement(isUnlocked);
+
+-- ============================================================
+-- DAILY/WEEKLY/MONTHLY SUMMARIES (Materialized Views)
+-- ============================================================
+
+CREATE TABLE DailySummary (
+    date INTEGER NOT NULL PRIMARY KEY, -- Midnight timestamp
+    workoutCompleted INTEGER NOT NULL DEFAULT 0,
+    workoutDuration INTEGER,
+    workoutVolume REAL,
+    caloriesConsumed REAL,
+    proteinConsumed REAL,
+    carbsConsumed REAL,
+    fatConsumed REAL,
+    waterMl INTEGER,
+    habitsCompleted INTEGER,
+    habitsTotal INTEGER,
+    routineCompleted INTEGER,
+    routineTotal INTEGER,
+    tasksCompleted INTEGER,
+    tasksTotal INTEGER,
+    readingMinutes INTEGER,
+    learningMinutes INTEGER,
+    recoveryStreak INTEGER,
+    weight REAL,
+    mood INTEGER,
+    energy INTEGER,
+    stress INTEGER,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000)
+);
+
+CREATE INDEX idx_DailySummary_date ON DailySummary(date);
+
+CREATE TABLE WeeklySummary (
+    weekStart INTEGER NOT NULL PRIMARY KEY, -- Monday midnight timestamp
+    workoutsCount INTEGER,
+    totalWorkoutDuration INTEGER,
+    totalVolume REAL,
+    avgCalories REAL,
+    avgProtein REAL,
+    avgWaterMl INTEGER,
+    habitCompletionRate REAL,
+    routineCompletionRate REAL,
+    tasksCompleted INTEGER,
+    readingMinutes INTEGER,
+    learningMinutes INTEGER,
+    booksCompleted INTEGER,
+    coursesCompleted INTEGER,
+    mediaWatched INTEGER,
+    recoveryRelapses INTEGER,
+    weightChange REAL,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000)
+);
+
+CREATE INDEX idx_WeeklySummary_weekStart ON WeeklySummary(weekStart);
+
+CREATE TABLE MonthlySummary (
+    monthStart INTEGER NOT NULL PRIMARY KEY, -- 1st of month midnight timestamp
+    workoutsCount INTEGER,
+    totalWorkoutDuration INTEGER,
+    totalVolume REAL,
+    prsCount INTEGER,
+    avgCalories REAL,
+    avgProtein REAL,
+    avgWaterMl INTEGER,
+    habitCompletionRate REAL,
+    routineCompletionRate REAL,
+    tasksCompleted INTEGER,
+    readingMinutes INTEGER,
+    learningMinutes INTEGER,
+    booksCompleted INTEGER,
+    coursesCompleted INTEGER,
+    mediaWatched INTEGER,
+    gamesCompleted INTEGER,
+    recoveryRelapses INTEGER,
+    weightChange REAL,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000)
+);
+
+CREATE INDEX idx_MonthlySummary_monthStart ON MonthlySummary(monthStart);
+-- ============================================================
+-- LifeForge OS - Core Queries
+
+-- ============================================================
+-- USER PROFILE
+-- ============================================================
+
+selectProfile:
+SELECT * FROM UserProfile WHERE id = 1;
+
+upsertProfile:
+INSERT OR REPLACE INTO UserProfile
+    (id, name, age, height, weight, goalWeight, units, caloriesGoal, proteinGoal, waterGoal, updatedAt)
+VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+-- ============================================================
+-- WORKOUTS
+-- ============================================================
+
+selectAllWorkoutPrograms:
+SELECT * FROM WorkoutProgram WHERE deletedAt IS NULL ORDER BY updatedAt DESC;
+
+selectActiveWorkoutProgram:
+SELECT * FROM WorkoutProgram WHERE isActive = 1 AND deletedAt IS NULL LIMIT 1;
+
+insertWorkoutProgram:
+INSERT OR REPLACE INTO WorkoutProgram
+    (id, name, nameAr, description, type, daysPerWeek, isActive, createdAt, updatedAt, deviceId, syncStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteWorkoutProgram:
+UPDATE WorkoutProgram SET deletedAt = ?, updatedAt = ?, syncStatus = 'Pending' WHERE id = ?;
+
+selectActiveWorkoutSession:
+SELECT * FROM WorkoutSession WHERE isCompleted = 0 AND deletedAt IS NULL ORDER BY startedAt DESC LIMIT 1;
+
+selectRecentWorkoutSessions:
+SELECT * FROM WorkoutSession WHERE deletedAt IS NULL ORDER BY startedAt DESC LIMIT ?;
+
+selectWorkoutSessionsBetween:
+SELECT * FROM WorkoutSession
+WHERE deletedAt IS NULL AND startedAt >= ? AND startedAt <= ?
+ORDER BY startedAt DESC;
+
+insertWorkoutSession:
+INSERT INTO WorkoutSession
+    (id, programId, dayId, name, startedAt, durationSeconds, createdAt, updatedAt, deviceId, syncStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+insertWorkoutSet:
+INSERT OR REPLACE INTO WorkoutSet
+    (id, sessionId, exerciseId, setIndex, weight, reps, rpe, restSeconds, isCompleted, isWarmup, createdAt, updatedAt, deviceId, syncStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateWorkoutSet:
+UPDATE WorkoutSet
+SET weight = ?, reps = ?, rpe = ?, restSeconds = ?, isCompleted = ?, updatedAt = ?, syncStatus = 'Pending'
+WHERE id = ?;
+
+selectSetsForSession:
+SELECT * FROM WorkoutSet WHERE sessionId = ? AND deletedAt IS NULL ORDER BY setIndex;
+
+selectExercisesNotInSession:
+SELECT DISTINCT e.* FROM Exercise e WHERE e.id NOT IN (SELECT exerciseId FROM WorkoutSet WHERE sessionId = ?);
+
+completeWorkoutSession:
+UPDATE WorkoutSession
+SET isCompleted = 1, completedAt = ?, durationSeconds = ?, totalVolume = ?, totalSets = ?,
+    totalReps = ?, updatedAt = ?, syncStatus = 'Pending'
+WHERE id = ?;
+
+discardWorkoutSession:
+UPDATE WorkoutSession SET deletedAt = ?, updatedAt = ?, syncStatus = 'Pending' WHERE id = ?;
+
+selectExerciseById:
+SELECT * FROM Exercise WHERE id = ?;
+
+selectAllExercises:
+SELECT * FROM Exercise WHERE deletedAt IS NULL ORDER BY updatedAt DESC;
+
+insertExercise:
+INSERT OR REPLACE INTO Exercise
+    (id, name, nameAr, nameEn, mainMuscle, secondaryMuscles, equipment, difficulty, description,
+     instructions, tips, imageUrl, videoUrl, tags, isFavorite, notes, isCustom, createdAt, updatedAt, deviceId, syncStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+-- ============================================================
+-- NUTRITION
+-- ============================================================
+
+selectFoodsByRecent:
+SELECT * FROM Food WHERE recentlyUsedAt IS NOT NULL AND deletedAt IS NULL ORDER BY recentlyUsedAt DESC LIMIT ?;
+
+selectFavoriteFoods:
+SELECT * FROM Food WHERE isFavorite = 1 AND deletedAt IS NULL ORDER BY name;
+
+selectFoodsByName:
+SELECT * FROM Food WHERE deletedAt IS NULL AND name LIKE '%' || ? || '%' ORDER BY name LIMIT ?;
+
+insertFood:
+INSERT OR REPLACE INTO Food
+    (id, name, nameAr, servingSize, calories, protein, carbs, fat, fiber, sugar, sodium,
+     isCustom, isFavorite, recentlyUsedAt, useCount, notes, createdAt, updatedAt, deviceId, syncStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+touchFood:
+UPDATE Food SET recentlyUsedAt = ?, useCount = useCount + 1, updatedAt = ? WHERE id = ?;
+
+selectMealsByDate:
+SELECT * FROM Meal WHERE date = ? AND deletedAt IS NULL ORDER BY time;
+
+selectMealsBetween:
+SELECT * FROM Meal WHERE date >= ? AND date <= ? AND deletedAt IS NULL ORDER BY date, time;
+
+insertMeal:
+INSERT OR REPLACE INTO Meal
+    (id, date, type, customType, time, name, imageUrl, notes, totalCalories, totalProtein,
+     totalCarbs, totalFat, createdAt, updatedAt, deviceId, syncStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+insertMealItem:
+INSERT OR REPLACE INTO MealItem
+    (id, mealId, foodId, servingSize, calories, protein, carbs, fat, createdAt, updatedAt, deviceId, syncStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectMealItems:
+SELECT * FROM MealItem WHERE mealId = ? AND deletedAt IS NULL;
+
+selectWaterByDate:
+SELECT * FROM WaterLog WHERE date = ? AND deletedAt IS NULL ORDER BY time;
+
+sumWaterByDate:
+SELECT COALESCE(SUM(amountMl), 0) FROM WaterLog WHERE date = ? AND deletedAt IS NULL;
+
+insertWaterLog:
+INSERT INTO WaterLog
+    (id, date, time, amountMl, createdAt, updatedAt, deviceId, syncStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+-- ============================================================
+-- HABITS & ROUTINES
+-- ============================================================
+
+selectAllHabits:
+SELECT * FROM Habit WHERE deletedAt IS NULL ORDER BY isActive DESC, updatedAt DESC;
+
+selectActiveHabits:
+SELECT * FROM Habit WHERE isActive = 1 AND deletedAt IS NULL ORDER BY name;
+
+insertHabit:
+INSERT OR REPLACE INTO Habit
+    (id, name, nameAr, icon, color, description, frequency, targetValue, targetUnit,
+     reminderTime, isActive, startDate, currentStreak, bestStreak, totalCompletions, createdAt, updatedAt, deviceId, syncStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectHabitLog:
+SELECT * FROM HabitLog WHERE habitId = ? AND date = ? AND deletedAt IS NULL;
+
+insertOrReplaceHabitLog:
+INSERT OR REPLACE INTO HabitLog
+    (id, habitId, date, value, isCompleted, notes, createdAt, updatedAt, deviceId, syncStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateHabitStreak:
+UPDATE Habit SET currentStreak = ?, bestStreak = ?, totalCompletions = ?, updatedAt = ? WHERE id = ?;
+
+selectAllRoutines:
+SELECT * FROM Routine WHERE deletedAt IS NULL ORDER BY updatedAt DESC;
+
+insertRoutine:
+INSERT OR REPLACE INTO Routine
+    (id, name, nameAr, type, description, isActive, createdAt, updatedAt, deviceId, syncStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectRoutineItems:
+SELECT * FROM RoutineItem WHERE routineId = ? AND deletedAt IS NULL ORDER BY itemOrder;
+
+insertRoutineItem:
+INSERT OR REPLACE INTO RoutineItem
+    (id, routineId, name, time, durationMinutes, itemOrder, isCompleted, createdAt, updatedAt, deviceId, syncStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+completeRoutineItem:
+UPDATE RoutineItem SET isCompleted = ?, updatedAt = ?, syncStatus = 'Pending' WHERE id = ?;
+
+-- ============================================================
+-- TASKS
+-- ============================================================
+
+selectTasksByDate:
+SELECT * FROM Task WHERE date = ? AND deletedAt IS NULL ORDER BY priority, time;
+
+selectOpenTasks:
+SELECT * FROM Task WHERE isCompleted = 0 AND deletedAt IS NULL ORDER BY date, priority;
+
+insertTask:
+INSERT OR REPLACE INTO Task
+    (id, title, description, date, time, priority, category, isRecurring, isCompleted, completedAt, createdAt, updatedAt, deviceId, syncStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+completeTask:
+UPDATE Task SET isCompleted = ?, completedAt = ?, updatedAt = ?, syncStatus = 'Pending' WHERE id = ?;
+
+-- ============================================================
+-- JOURNAL & NOTES
+-- ============================================================
+
+selectJournalByDate:
+SELECT * FROM JournalEntry WHERE date = ? AND deletedAt IS NULL ORDER BY createdAt DESC;
+
+selectAllJournal:
+SELECT * FROM JournalEntry WHERE isPrivate = 0 AND deletedAt IS NULL ORDER BY date DESC;
+
+insertJournalEntry:
+INSERT OR REPLACE INTO JournalEntry
+    (id, date, title, content, mood, energy, stress, tags, isPrivate, createdAt, updatedAt, deviceId, syncStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectAllNotes:
+SELECT * FROM Note WHERE deletedAt IS NULL ORDER BY isPinned DESC, updatedAt DESC;
+
+selectNotesByType:
+SELECT * FROM Note WHERE type = ? AND deletedAt IS NULL ORDER BY isPinned DESC, updatedAt DESC;
+
+insertNote:
+INSERT OR REPLACE INTO Note
+    (id, type, title, content, plainText, isPinned, isPrivate, tags, linkedEntityType, linkedEntityId, createdAt, updatedAt, deviceId, syncStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+-- ============================================================
+-- BOOKS
+-- ============================================================
+
+selectBooksByStatus:
+SELECT * FROM Book WHERE status = ? AND deletedAt IS NULL ORDER BY updatedAt DESC;
+
+selectReadingBooks:
+SELECT * FROM Book WHERE status = 'Reading' AND deletedAt IS NULL ORDER BY updatedAt DESC;
+
+selectAllBooks:
+SELECT * FROM Book WHERE deletedAt IS NULL ORDER BY updatedAt DESC;
+
+insertBook:
+INSERT OR REPLACE INTO Book
+    (id, title, author, coverUrl, description, category, format, totalPages, currentPage, status,
+     rating, isFavorite, createdAt, updatedAt, deviceId, syncStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateBookProgress:
+UPDATE Book SET currentPage = ?, updatedAt = ?, status = 'Reading', syncStatus = 'Pending' WHERE id = ?;
+
+-- ============================================================
+-- COURSES
+-- ============================================================
+
+selectAllCourses:
+SELECT * FROM Course WHERE deletedAt IS NULL ORDER BY updatedAt DESC;
+
+insertCourse:
+INSERT OR REPLACE INTO Course
+    (id, title, provider, instructor, thumbnailUrl, description, category, totalLessons,
+     status, progress, isFavorite, createdAt, updatedAt, deviceId, syncStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectCourseSections:
+SELECT * FROM CourseSection WHERE courseId = ? AND deletedAt IS NULL ORDER BY sectionOrder;
+
+selectCourseLessons:
+SELECT * FROM CourseLesson WHERE sectionId = ? AND deletedAt IS NULL ORDER BY lessonOrder;
+
+insertCourseSection:
+INSERT OR REPLACE INTO CourseSection
+    (id, courseId, title, sectionOrder, createdAt, updatedAt, deviceId, syncStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+insertCourseLesson:
+INSERT OR REPLACE INTO CourseLesson
+    (id, sectionId, title, lessonOrder, videoUrl, durationMinutes, isCompleted, lastPosition, progress, createdAt, updatedAt, deviceId, syncStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+completeCourseLesson:
+UPDATE CourseLesson SET isCompleted = 1, completedAt = ?, progress = 100, updatedAt = ?, syncStatus = 'Pending' WHERE id = ?;
+
+updateCourseLessonPosition:
+UPDATE CourseLesson SET lastPosition = ?, updatedAt = ?, syncStatus = 'Pending' WHERE id = ?;
+
+updateCourseProgress:
+UPDATE Course SET progress = ?, status = CASE WHEN ? = 100 THEN 'Completed' ELSE status END, updatedAt = ?, syncStatus = 'Pending' WHERE id = ?;
+
+-- ============================================================
+-- ENTERTAINMENT
+-- ============================================================
+
+selectMediaByType:
+SELECT * FROM MediaItem WHERE type = ? AND deletedAt IS NULL ORDER BY updatedAt DESC;
+
+selectWatchingMedia:
+SELECT * FROM MediaItem WHERE status = 'Watching' AND deletedAt IS NULL ORDER BY updatedAt DESC;
+
+selectAllMedia:
+SELECT * FROM MediaItem WHERE deletedAt IS NULL ORDER BY updatedAt DESC;
+
+insertMediaItem:
+INSERT OR REPLACE INTO MediaItem
+    (id, type, title, titleAr, imageUrl, backdropUrl, description, externalUrl, status, rating,
+     personalRating, review, tags, isFavorite, progressPercent, createdAt, updatedAt, deviceId, syncStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+-- ============================================================
+-- RECOVERY
+-- ============================================================
+
+selectAllRecoveryEntries:
+SELECT * FROM RecoveryEntry WHERE deletedAt IS NULL ORDER BY date DESC;
+
+insertRecoveryEntry:
+INSERT OR REPLACE INTO RecoveryEntry
+    (id, date, isRelapse, trigger, mood, whatHappened, whatLearned, notes, streakAtTime, createdAt, updatedAt, deviceId, syncStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectAllRecoveryTasks:
+SELECT * FROM RecoveryTask WHERE isActive = 1 AND deletedAt IS NULL ORDER BY sortOrder;
+
+insertRecoveryTask:
+INSERT OR REPLACE INTO RecoveryTask
+    (id, name, category, isActive, sortOrder, createdAt, updatedAt, deviceId, syncStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+-- ============================================================
+-- TIMERS
+-- ============================================================
+
+selectAllTimerPresets:
+SELECT * FROM TimerPreset WHERE deletedAt IS NULL ORDER BY isDefault DESC, name;
+
+insertTimerPreset:
+INSERT OR REPLACE INTO TimerPreset
+    (id, name, type, phases, totalDuration, soundEnabled, vibrationEnabled, createdAt, updatedAt, deviceId, syncStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+-- ============================================================
+-- SYNC
+-- ============================================================
+
+selectDirtySyncRecords:
+SELECT * FROM SyncRecord WHERE status != 'Synced';
+
+selectSyncRecord:
+SELECT * FROM SyncRecord WHERE entityType = ? AND entityId = ?;
+
+upsertSyncRecord:
+INSERT OR REPLACE INTO SyncRecord
+    (entityType, entityId, status, version, deviceId, createdAt, updatedAt, deletedAt, conflictData)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateSyncRecordStatus:
+UPDATE SyncRecord SET status = ?, version = ?, updatedAt = ? WHERE entityType = ? AND entityId = ?;
+
+insertPendingOperation:
+INSERT INTO SyncQueue (operationType, entityType, entityId, data, priority)
+VALUES (?, ?, ?, ?, ?);
+
+selectPendingOperations:
+SELECT * FROM SyncQueue ORDER BY priority DESC, scheduledAt ASC;
+
+deletePendingOperation:
+DELETE FROM SyncQueue WHERE id = ?;-- ============================================================
+-- EXTRA QUERIES FOR REPOSITORY IMPLEMENTATIONS
+-- ============================================================
+
+selectFavoriteExercises:
+SELECT * FROM Exercise WHERE isFavorite = 1 AND deletedAt IS NULL ORDER BY name;
+
+selectExercisesByName:
+SELECT * FROM Exercise WHERE deletedAt IS NULL AND name LIKE '%' || ? || '%' ORDER BY name LIMIT 30;
+
+deleteExercise:
+UPDATE Exercise SET deletedAt = ?, updatedAt = ?, syncStatus = 'Pending' WHERE id = ?;
+
+toggleExerciseFavorite:
+UPDATE Exercise SET isFavorite = CASE WHEN isFavorite = 1 THEN 0 ELSE 1 END, updatedAt = ?, syncStatus = 'Pending' WHERE id = ?;
+
+countExercises:
+SELECT COUNT(*) FROM Exercise WHERE deletedAt IS NULL;
+
+selectWorkoutProgramById:
+SELECT * FROM WorkoutProgram WHERE id = ? AND deletedAt IS NULL;
+
+selectDaysForProgram:
+SELECT * FROM WorkoutDay WHERE programId = ? AND deletedAt IS NULL ORDER BY dayIndex;
+
+insertWorkoutDay:
+INSERT OR REPLACE INTO WorkoutDay
+    (id, programId, dayIndex, name, nameAr, notes, createdAt, updatedAt, deviceId, syncStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectExercisesForDay:
+SELECT * FROM WorkoutExercise WHERE dayId = ? AND deletedAt IS NULL ORDER BY exerciseOrder;
+
+insertWorkoutExercise:
+INSERT OR REPLACE INTO WorkoutExercise
+    (id, dayId, exerciseId, exerciseOrder, setsTarget, repsTarget, weightTarget, restSeconds, notes, createdAt, updatedAt, deviceId, syncStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+setActiveWorkoutProgram:
+UPDATE WorkoutProgram SET isActive = CASE WHEN id = ? THEN 1 ELSE 0 END, updatedAt = ?, syncStatus = 'Pending' WHERE deletedAt IS NULL;
+
+selectWorkoutSessionById:
+SELECT * FROM WorkoutSession WHERE id = ? AND deletedAt IS NULL;
+
+selectCompletedWorkoutSessions:
+SELECT * FROM WorkoutSession WHERE isCompleted = 1 AND deletedAt IS NULL ORDER BY startedAt DESC LIMIT 100;
+
+deleteWorkoutSession:
+UPDATE WorkoutSession SET deletedAt = ?, updatedAt = ?, syncStatus = 'Pending' WHERE id = ?;
+
+selectMeasurements:
+SELECT * FROM BodyMeasurement WHERE deletedAt IS NULL ORDER BY date DESC, updatedAt DESC;
+
+selectLatestMeasurement:
+SELECT * FROM BodyMeasurement WHERE deletedAt IS NULL ORDER BY date DESC, updatedAt DESC LIMIT 1;
+
+insertMeasurement:
+INSERT OR REPLACE INTO BodyMeasurement
+    (id, date, weight, bodyFat, chest, waist, arms, thighs, neck, shoulders, calves, forearms, notes, createdAt, updatedAt, deviceId, syncStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+-- ============================================================
+-- EXTRA QUERIES 2: FOOD / WATER
+-- ============================================================
+
+selectAllFoods:
+SELECT * FROM Food WHERE deletedAt IS NULL ORDER BY name;
+
+deleteFood:
+UPDATE Food SET deletedAt = ?, updatedAt = ?, syncStatus = 'Pending' WHERE id = ?;
+
+deleteMeal:
+UPDATE Meal SET deletedAt = ?, updatedAt = ?, syncStatus = 'Pending' WHERE id = ?;
+
+deleteWaterLog:
+DELETE FROM WaterLog WHERE id = ?;
+
+-- ============================================================
+-- EXTRA QUERIES 3: HABITS / ROUTINES / TASKS / GOALS
+-- ============================================================
+
+deleteHabit:
+UPDATE Habit SET deletedAt = ?, updatedAt = ?, syncStatus = 'Pending' WHERE id = ?;
+
+selectHabitLogsAfter:
+SELECT * FROM HabitLog WHERE habitId = ? AND date >= ? AND deletedAt IS NULL ORDER BY date DESC;
+
+deleteRoutine:
+UPDATE Routine SET deletedAt = ?, updatedAt = ?, syncStatus = 'Pending' WHERE id = ?;
+
+selectAllTasks:
+SELECT * FROM Task WHERE deletedAt IS NULL ORDER BY isCompleted, date, priority;
+
+selectCompletedTasks:
+SELECT * FROM Task WHERE isCompleted = 1 AND deletedAt IS NULL ORDER BY completedAt DESC;
+
+selectTaskById:
+SELECT * FROM Task WHERE id = ? AND deletedAt IS NULL;
+
+deleteTask:
+UPDATE Task SET deletedAt = ?, updatedAt = ?, syncStatus = 'Pending' WHERE id = ?;
+
+selectAllGoals:
+SELECT * FROM Goal WHERE deletedAt IS NULL ORDER BY isActive DESC, updatedAt DESC;
+
+selectActiveGoals:
+SELECT * FROM Goal WHERE isActive = 1 AND deletedAt IS NULL ORDER BY deadline, updatedAt DESC;
+
+selectGoalById:
+SELECT * FROM Goal WHERE id = ? AND deletedAt IS NULL;
+
+insertGoal:
+INSERT OR REPLACE INTO Goal
+    (id, title, description, category, targetValue, currentValue, unit, deadline, startDate, isActive, progress, createdAt, updatedAt, deviceId, syncStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteGoal:
+UPDATE Goal SET deletedAt = ?, updatedAt = ?, syncStatus = 'Pending' WHERE id = ?;
+
+-- ============================================================
+-- EXTRA QUERIES 4: JOURNAL / NOTES
+-- ============================================================
+
+selectJournalBetween:
+SELECT * FROM JournalEntry WHERE date >= ? AND date <= ? AND deletedAt IS NULL ORDER BY date DESC;
+
+selectJournalBySearch:
+SELECT * FROM JournalEntry WHERE deletedAt IS NULL AND (content LIKE '%' || ? || '%' OR title LIKE '%' || ? || '%') ORDER BY date DESC LIMIT 50;
+
+deleteJournalEntry:
+UPDATE JournalEntry SET deletedAt = ?, updatedAt = ?, syncStatus = 'Pending' WHERE id = ?;
+
+selectPinnedNotes:
+SELECT * FROM Note WHERE isPinned = 1 AND deletedAt IS NULL ORDER BY updatedAt DESC;
+
+selectPrivateNotes:
+SELECT * FROM Note WHERE isPrivate = 1 AND deletedAt IS NULL ORDER BY updatedAt DESC;
+
+deleteNote:
+UPDATE Note SET deletedAt = ?, updatedAt = ?, syncStatus = 'Pending' WHERE id = ?;
+
+toggleNotePinned:
+UPDATE Note SET isPinned = CASE WHEN isPinned = 1 THEN 0 ELSE 1 END, updatedAt = ?, syncStatus = 'Pending' WHERE id = ?;
+
+-- ============================================================
+-- EXTRA QUERIES 5: BOOKS / COURSES / MEDIA
+-- ============================================================
+
+deleteBook:
+UPDATE Book SET deletedAt = ?, updatedAt = ?, syncStatus = 'Pending' WHERE id = ?;
+
+deleteCourse:
+UPDATE Course SET deletedAt = ?, updatedAt = ?, syncStatus = 'Pending' WHERE id = ?;
+
+deleteMediaItem:
+UPDATE MediaItem SET deletedAt = ?, updatedAt = ?, syncStatus = 'Pending' WHERE id = ?;
+
+-- ============================================================
+-- EXTRA QUERIES 6: RECOVERY / TIMERS
+-- ============================================================
+
+selectRecoveryTaskLog:
+SELECT * FROM RecoveryTaskLog WHERE taskId = ? AND date = ? AND deletedAt IS NULL;
+
+upsertRecoveryTaskLog:
+INSERT OR REPLACE INTO RecoveryTaskLog
+    (id, taskId, date, value, isCompleted, notes, createdAt, updatedAt, deviceId, syncStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectTimerPresetById:
+SELECT * FROM TimerPreset WHERE id = ? AND deletedAt IS NULL;
+
+deleteTimerPreset:
+UPDATE TimerPreset SET deletedAt = ?, updatedAt = ?, syncStatus = 'Pending' WHERE id = ?;
+-- ============================================================
+-- EXTRA QUERIES 7: JOURNAL FIXES
+-- ============================================================
+
+selectPrivateJournal:
+SELECT * FROM JournalEntry WHERE isPrivate = 1 AND deletedAt IS NULL ORDER BY date DESC;
+
+selectJournalEntryById:
+SELECT * FROM JournalEntry WHERE id = ? AND deletedAt IS NULL;
+-- ============================================================
+-- EXTRA QUERIES 8: WATER RANGE
+-- ============================================================
+
+selectWaterBetween:
+SELECT * FROM WaterLog WHERE date >= ? AND date <= ? AND deletedAt IS NULL ORDER BY date, time;

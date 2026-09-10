@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LifeForge OS</string>
+    <string name="widget_daily_overview">Daily Overview</string>
+    <string name="widget_water">Water: %1$d ml</string>
+    <string name="widget_empty">No data yet</string>
+</resources>
