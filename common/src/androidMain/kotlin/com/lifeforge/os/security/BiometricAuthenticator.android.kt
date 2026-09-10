@@ -1,10 +1,10 @@
 package com.lifeforge.os.security
 
-import android.app.Activity
 import android.content.Context
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
 import com.lifeforge.os.core.logging.LifeForgeLogger
 
 class BiometricAuthenticatorImpl(
@@ -12,9 +12,9 @@ class BiometricAuthenticatorImpl(
     private val logger: LifeForgeLogger,
 ) : BiometricAuthenticator {
 
-    private var activityProvider: (() -> Activity)? = null
+    private var activityProvider: (() -> FragmentActivity)? = null
 
-    fun attachActivity(provider: () -> Activity) {
+    fun attachActivity(provider: () -> FragmentActivity) {
         activityProvider = provider
     }
 
@@ -61,8 +61,8 @@ class BiometricAuthenticatorImpl(
             .setSubtitle(subtitle)
             .setNegativeButtonText("Use PIN")
             .setAllowedAuthenticators(
-                BiometricPrompt.Authenticator.BIOMETRIC_STRONG or
-                    BiometricPrompt.Authenticator.DEVICE_CREDENTIAL,
+                BiometricManager.Authenticators.BIOMETRIC_STRONG or
+                    BiometricManager.Authenticators.DEVICE_CREDENTIAL,
             )
             .build()
 

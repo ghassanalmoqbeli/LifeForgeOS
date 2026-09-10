@@ -8,5 +8,5 @@ internal val LifeForgeDb.q: LifeForgeDatabaseQueries
 
 internal fun Long?.orZero(): Long = this ?: 0L
 
-internal fun String.generateId(): String =
+internal fun generateId(): String =
     "${System.currentTimeMillis()}-${kotlin.random.Random.nextLong().toString().substring(1, 9)}"

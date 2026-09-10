@@ -8,6 +8,7 @@ import com.lifeforge.os.sync.SyncRecord
 import com.lifeforge.os.sync.SyncStatus
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -16,7 +17,7 @@ class SyncRepositoryImpl(
 ) : SyncRepository {
 
     override fun observeDirtyCount(): Flow<Int> =
-        db.database.lifeForgeDatabaseQueries.selectDirtySyncRecords().asFlow().mapToList().map { it.size }
+        db.database.lifeForgeDatabaseQueries.selectDirtySyncRecords().asFlow().mapToList(Dispatchers.IO).map { it.size }
 
     override suspend fun markDirty(
         entityType: String,

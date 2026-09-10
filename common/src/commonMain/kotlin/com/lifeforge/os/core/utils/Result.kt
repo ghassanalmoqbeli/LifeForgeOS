@@ -37,16 +37,16 @@ inline fun <T> Result<T>.onFailure(block: (AppError) -> Unit): Result<T> {
  */
 sealed interface AppError {
     val message: String
-    data class Network(val message: String, val cause: Throwable? = null) : AppError
-    data class Database(val message: String, val cause: Throwable? = null) : AppError
-    data class Validation(val field: String?, val message: String) : AppError
-    data class Auth(val message: String, val cause: Throwable? = null) : AppError
-    data class SyncConflict(val message: String, val entityType: String, val entityId: String) : AppError
-    data class File(val message: String, val cause: Throwable? = null) : AppError
-    data class Import(val message: String, val cause: Throwable? = null) : AppError
-    data class Permission(val message: String) : AppError
-    data class Storage(val message: String, val cause: Throwable? = null) : AppError
-    data class Unknown(val message: String, val cause: Throwable? = null) : AppError
+    data class Network(override val message: String, val cause: Throwable? = null) : AppError
+    data class Database(override val message: String, val cause: Throwable? = null) : AppError
+    data class Validation(val field: String?, override val message: String) : AppError
+    data class Auth(override val message: String, val cause: Throwable? = null) : AppError
+    data class SyncConflict(override val message: String, val entityType: String, val entityId: String) : AppError
+    data class File(override val message: String, val cause: Throwable? = null) : AppError
+    data class Import(override val message: String, val cause: Throwable? = null) : AppError
+    data class Permission(override val message: String) : AppError
+    data class Storage(override val message: String, val cause: Throwable? = null) : AppError
+    data class Unknown(override val message: String, val cause: Throwable? = null) : AppError
 }
 
 fun Throwable.toAppError(): AppError = AppError.Unknown(message ?: "Unknown error", this)

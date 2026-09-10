@@ -7,6 +7,8 @@ import com.lifeforge.os.domain.repository.GoalRepository
 import com.lifeforge.os.domain.repository.TaskRepository
 import com.lifeforge.os.sync.SyncStatus
 import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -16,18 +18,18 @@ class TaskRepositoryImpl(
 
     override fun observeTasks(date: Long?): Flow<List<Task>> {
         val flow: Flow<List<com.lifeforge.os.data.database.Task>> = if (date == null) {
-            db.q.selectAllTasks().asFlow().map { it.list }
+            db.q.selectAllTasks().asFlow().mapToList(Dispatchers.IO)
         } else {
-            db.q.selectTasksByDate(date).asFlow().map { it.list }
+            db.q.selectTasksByDate(date).asFlow().mapToList(Dispatchers.IO)
         }
         return flow.map { rows -> rows.map { it.toDomain() } }
     }
 
     override fun observeOpen(): Flow<List<Task>> =
-        db.q.selectOpenTasks().asFlow().map { it.list }.map { rows -> rows.map { it.toDomain() } }
+        db.q.selectOpenTasks().asFlow().mapToList(Dispatchers.IO).map { rows -> rows.map { it.toDomain() } }
 
     override fun observeCompleted(): Flow<List<Task>> =
-        db.q.selectCompletedTasks().asFlow().map { it.list }.map { rows -> rows.map { it.toDomain() } }
+        db.q.selectCompletedTasks().asFlow().mapToList(Dispatchers.IO).map { rows -> rows.map { it.toDomain() } }
 
     override suspend fun getById(id: String): Task? =
         db.q.selectTaskById(id).executeAsOneOrNull()?.toDomain()
@@ -71,11 +73,11 @@ class GoalRepositoryImpl(
 ) : GoalRepository {
 
     override fun observeAll(): Flow<List<Goal>> =
-        db.q.selectAllGoals().asFlow().map { it.list }
+        db.q.selectAllGoals().asFlow().mapToList(Dispatchers.IO)
             .map { rows -> rows.map { it.toDomain() } }
 
     override fun observeActive(): Flow<List<Goal>> =
-        db.q.selectActiveGoals().asFlow().map { it.list }
+        db.q.selectActiveGoals().asFlow().mapToList(Dispatchers.IO)
             .map { rows -> rows.map { it.toDomain() } }
 
     override suspend fun getById(id: String): Goal? =

@@ -15,8 +15,10 @@ import com.lifeforge.os.domain.repository.RoutineRepository
 import com.lifeforge.os.domain.repository.WaterRepository
 import com.lifeforge.os.sync.SyncStatus
 import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOne
 import app.cash.sqldelight.coroutines.mapToOneOrNull
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
@@ -28,13 +30,13 @@ class FoodRepositoryImpl(
 ) : FoodRepository {
 
     override fun observeAll(): Flow<List<Food>> =
-        db.q.selectAllFoods().asFlow().map { it.list }.map { rows -> rows.map { it.toDomain() } }
+        db.q.selectAllFoods().asFlow().mapToList(Dispatchers.IO).map { rows -> rows.map { it.toDomain() } }
 
     override fun observeFavorites(): Flow<List<Food>> =
-        db.q.selectFavoriteFoods().asFlow().map { it.list }.map { rows -> rows.map { it.toDomain() } }
+        db.q.selectFavoriteFoods().asFlow().mapToList(Dispatchers.IO).map { rows -> rows.map { it.toDomain() } }
 
     override suspend fun search(query: String): List<Food> =
-        db.q.selectFoodsByName(query).executeAsList().map { it.toDomain() }
+        db.q.selectFoodsByName(query, 50).executeAsList().map { it.toDomain() }
 
     override suspend fun save(food: Food) {
         val now = System.currentTimeMillis()
@@ -81,13 +83,13 @@ class NutritionRepositoryImpl(
         db.q.selectMealItems(mealId).executeAsList().map { it.toDomain() }
 
     override fun observeMeals(date: Long): Flow<List<Meal>> =
-        db.q.selectMealsByDate(date).asFlow().map { it.list }
+        db.q.selectMealsByDate(date).asFlow().mapToList(Dispatchers.IO)
             .map { rows -> rows.map { row -> row.toDomain(loadItems(row.id)) } }
 
     override fun observeDay(date: Long): Flow<List<Meal>> = observeMeals(date)
 
     override fun observeHistory(start: Long, end: Long): Flow<List<Meal>> =
-        db.q.selectMealsBetween(start, end).asFlow().map { it.list }
+        db.q.selectMealsBetween(start, end).asFlow().mapToList(Dispatchers.IO)
             .map { rows -> rows.map { row -> row.toDomain(loadItems(row.id)) } }
 
     override suspend fun getMeal(id: String): Meal? {
@@ -163,11 +165,11 @@ class WaterRepositoryImpl(
 ) : WaterRepository {
 
     override fun observeDay(date: Long): Flow<List<WaterLog>> =
-        db.q.selectWaterByDate(date).asFlow().map { it.list }
+        db.q.selectWaterByDate(date).asFlow().mapToList(Dispatchers.IO)
             .map { rows -> rows.map { it.toDomain() } }
 
     override fun observeRange(start: Long, end: Long): Flow<List<WaterLog>> =
-        db.q.selectWaterBetween(start, end).asFlow().map { it.list }
+        db.q.selectWaterBetween(start, end).asFlow().mapToList(Dispatchers.IO)
             .map { rows -> rows.map { it.toDomain() } }
 
     override suspend fun addWater(amountMl: Int, date: Long, time: Long) {
@@ -189,7 +191,7 @@ class WaterRepositoryImpl(
     }
 
     override suspend fun getTotalForDay(date: Long): Int =
-        db.q.sumWaterByDate(date).executeAsOne().toInt()
+        db.q.sumWaterByDate(date).executeAsOneOrNull()?.toInt() ?: 0
 }
 
 class HabitRepositoryImpl(
@@ -197,13 +199,13 @@ class HabitRepositoryImpl(
 ) : HabitRepository {
 
     override fun observeAll(): Flow<List<Habit>> =
-        db.q.selectAllHabits().asFlow().map { it.list }.map { rows -> rows.map { it.toDomain() } }
+        db.q.selectAllHabits().asFlow().mapToList(Dispatchers.IO).map { rows -> rows.map { it.toDomain() } }
 
     override fun observeActive(): Flow<List<Habit>> =
-        db.q.selectActiveHabits().asFlow().map { it.list }.map { rows -> rows.map { it.toDomain() } }
+        db.q.selectActiveHabits().asFlow().mapToList(Dispatchers.IO).map { rows -> rows.map { it.toDomain() } }
 
     override fun observeDayLog(date: Long): Flow<Map<String, Boolean>> =
-        db.q.selectActiveHabits().asFlow().map { it.list }
+        db.q.selectActiveHabits().asFlow().mapToList(Dispatchers.IO)
             .map { rows ->
                 rows.mapNotNull { row ->
                     val log = db.q.selectHabitLog(row.id, date).executeAsOneOrNull()
@@ -258,7 +260,7 @@ class HabitRepositoryImpl(
         )
         val (current, best) = getStreak(habitId)
         val total = db.q.selectHabitLogsAfter(habitId, 0).executeAsList().count { it.isCompleted == 1L }.toLong()
-        db.q.updateHabitStreak(current, best, total, now, habitId)
+        db.q.updateHabitStreak(current.toLong(), best.toLong(), total, now, habitId)
         return isCompleted
     }
 
@@ -301,7 +303,7 @@ class RoutineRepositoryImpl(
         db.q.selectRoutineItems(routineId).executeAsList().map { it.toDomain() }
 
     override fun observeAll(): Flow<List<Routine>> =
-        db.q.selectAllRoutines().asFlow().map { it.list }
+        db.q.selectAllRoutines().asFlow().mapToList(Dispatchers.IO)
             .map { rows -> rows.map { row -> row.toDomain(loadItems(row.id)) } }
 
     override fun observeToday(): Flow<List<Routine>> = observeAll()

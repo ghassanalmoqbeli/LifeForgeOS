@@ -12,7 +12,9 @@ import com.lifeforge.os.domain.repository.WorkoutProgramRepository
 import com.lifeforge.os.domain.repository.WorkoutRepository
 import com.lifeforge.os.sync.SyncStatus
 import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOneOrNull
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
@@ -22,15 +24,15 @@ class ExerciseRepositoryImpl(
 ) : ExerciseRepository {
 
     override fun observeAll(): Flow<List<Exercise>> =
-        db.q.selectAllExercises().asFlow().map { it.list }
+        db.q.selectAllExercises().asFlow().mapToList(Dispatchers.IO)
             .map { rows -> rows.map { it.toDomain() } }
 
     override fun observeFavorites(): Flow<List<Exercise>> =
-        db.q.selectFavoriteExercises().asFlow().map { it.list }
+        db.q.selectFavoriteExercises().asFlow().mapToList(Dispatchers.IO)
             .map { rows -> rows.map { it.toDomain() } }
 
     override fun count(): Flow<Int> =
-        db.q.countExercises().asFlow().mapToOneOrNull().map { it?.toInt() ?: 0 }
+        db.q.countExercises().asFlow().mapToOneOrNull(Dispatchers.IO).map { it?.toInt() ?: 0 }
 
     override suspend fun getById(id: String): Exercise? =
         db.q.selectExerciseById(id).executeAsOneOrNull()?.toDomain()
@@ -80,7 +82,7 @@ class WorkoutProgramRepositoryImpl(
 ) : WorkoutProgramRepository {
 
     override fun observePrograms(): Flow<List<WorkoutProgram>> =
-        db.q.selectAllWorkoutPrograms().asFlow().map { it.list }
+        db.q.selectAllWorkoutPrograms().asFlow().mapToList(Dispatchers.IO)
             .map { rows -> rows.map { it.toDomain() } }
 
     override suspend fun getById(id: String): WorkoutProgram? {
@@ -156,16 +158,16 @@ class WorkoutRepositoryImpl(
 ) : WorkoutRepository {
 
     override fun observeActiveSession(): Flow<WorkoutSession?> =
-        db.q.selectActiveWorkoutSession().asFlow().mapToOneOrNull().mapNotNull { row ->
+        db.q.selectActiveWorkoutSession().asFlow().mapToOneOrNull(Dispatchers.IO).mapNotNull { row ->
             row?.let { it.toDomain(sets = emptyList()) }
         }
 
     override fun observeHistory(): Flow<List<WorkoutSession>> =
-        db.q.selectCompletedWorkoutSessions().asFlow().map { it.list }
+        db.q.selectCompletedWorkoutSessions().asFlow().mapToList(Dispatchers.IO)
             .map { rows -> rows.map { it.toDomain() } }
 
     override fun observeRecent(limit: Int): Flow<List<WorkoutSession>> =
-        db.q.selectRecentWorkoutSessions(limit.toLong()).asFlow().map { it.list }
+        db.q.selectRecentWorkoutSessions(limit.toLong()).asFlow().mapToList(Dispatchers.IO)
             .map { rows -> rows.map { it.toDomain() } }
 
     override suspend fun getSession(id: String): WorkoutSession? {
@@ -257,7 +259,7 @@ class BodyTrackingRepositoryImpl(
 ) : BodyTrackingRepository {
 
     override fun observeMeasurements(): Flow<List<BodyMeasurementEntry>> =
-        db.q.selectMeasurements().asFlow().map { it.list }
+        db.q.selectMeasurements().asFlow().mapToList(Dispatchers.IO)
             .map { rows ->
                 rows.map {
                     BodyMeasurementEntry(

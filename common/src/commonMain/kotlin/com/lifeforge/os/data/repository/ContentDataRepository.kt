@@ -17,6 +17,8 @@ import com.lifeforge.os.domain.repository.MediaRepository
 import com.lifeforge.os.domain.repository.NoteRepository
 import com.lifeforge.os.sync.SyncStatus
 import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -25,17 +27,17 @@ class JournalRepositoryImpl(
 ) : JournalRepository {
 
     override fun observeAll(): Flow<List<JournalEntry>> =
-        db.q.selectAllJournal().asFlow().map { it.list }.map { rows -> rows.map { it.toDomain() } }
+        db.q.selectAllJournal().asFlow().mapToList(Dispatchers.IO).map { rows -> rows.map { it.toDomain() } }
 
     override fun observeMonth(year: Int, month: Int): Flow<List<JournalEntry>> {
         val start = yearStart(year, month)
         val end = yearStart(if (month == 12) year + 1 else year, if (month == 12) 1 else month + 1) - 1
-        return db.q.selectJournalBetween(start, end).asFlow().map { it.list }
+        return db.q.selectJournalBetween(start, end).asFlow().mapToList(Dispatchers.IO)
             .map { rows -> rows.map { it.toDomain() } }
     }
 
     override fun observePrivate(): Flow<List<JournalEntry>> =
-        db.q.selectPrivateJournal().asFlow().map { it.list }.map { rows -> rows.map { it.toDomain() } }
+        db.q.selectPrivateJournal().asFlow().mapToList(Dispatchers.IO).map { rows -> rows.map { it.toDomain() } }
 
     override suspend fun getById(id: String): JournalEntry? =
         db.q.selectJournalEntryById(id).executeAsOneOrNull()?.toDomain()
@@ -84,16 +86,16 @@ class NoteRepositoryImpl(
 ) : NoteRepository {
 
     override fun observeAll(): Flow<List<Note>> =
-        db.q.selectAllNotes().asFlow().map { it.list }.map { rows -> rows.map { it.toDomain() } }
+        db.q.selectAllNotes().asFlow().mapToList(Dispatchers.IO).map { rows -> rows.map { it.toDomain() } }
 
     override fun observePinned(): Flow<List<Note>> =
-        db.q.selectPinnedNotes().asFlow().map { it.list }.map { rows -> rows.map { it.toDomain() } }
+        db.q.selectPinnedNotes().asFlow().mapToList(Dispatchers.IO).map { rows -> rows.map { it.toDomain() } }
 
     override fun observePrivate(): Flow<List<Note>> =
-        db.q.selectPrivateNotes().asFlow().map { it.list }.map { rows -> rows.map { it.toDomain() } }
+        db.q.selectPrivateNotes().asFlow().mapToList(Dispatchers.IO).map { rows -> rows.map { it.toDomain() } }
 
     override fun observeByType(type: NoteType): Flow<List<Note>> =
-        db.q.selectNotesByType(type.name).asFlow().map { it.list }.map { rows -> rows.map { it.toDomain() } }
+        db.q.selectNotesByType(type.name).asFlow().mapToList(Dispatchers.IO).map { rows -> rows.map { it.toDomain() } }
 
     override suspend fun getById(id: String): Note? =
         db.q.selectAllNotes().executeAsList().firstOrNull { it.id == id }?.toDomain()
@@ -138,13 +140,13 @@ class BookRepositoryImpl(
 ) : BookRepository {
 
     override fun observeAll(): Flow<List<Book>> =
-        db.q.selectAllBooks().asFlow().map { it.list }.map { rows -> rows.map { it.toDomain() } }
+        db.q.selectAllBooks().asFlow().mapToList(Dispatchers.IO).map { rows -> rows.map { it.toDomain() } }
 
     override fun observeByStatus(status: BookStatus): Flow<List<Book>> =
-        db.q.selectBooksByStatus(status.name).asFlow().map { it.list }.map { rows -> rows.map { it.toDomain() } }
+        db.q.selectBooksByStatus(status.name).asFlow().mapToList(Dispatchers.IO).map { rows -> rows.map { it.toDomain() } }
 
     override fun observeReading(): Flow<List<Book>> =
-        db.q.selectReadingBooks().asFlow().map { it.list }.map { rows -> rows.map { it.toDomain() } }
+        db.q.selectReadingBooks().asFlow().mapToList(Dispatchers.IO).map { rows -> rows.map { it.toDomain() } }
 
     override suspend fun getById(id: String): Book? =
         db.q.selectAllBooks().executeAsList().firstOrNull { it.id == id }?.toDomain()
@@ -194,11 +196,11 @@ class CourseRepositoryImpl(
         }
 
     override fun observeAll(): Flow<List<Course>> =
-        db.q.selectAllCourses().asFlow().map { it.list }
+        db.q.selectAllCourses().asFlow().mapToList(Dispatchers.IO)
             .map { rows -> rows.map { row -> row.toDomain(loadSections(row.id)) } }
 
     override fun observeInProgress(): Flow<List<Course>> =
-        db.q.selectAllCourses().asFlow().map { it.list }
+        db.q.selectAllCourses().asFlow().mapToList(Dispatchers.IO)
             .map { rows -> rows.filter { it.status == "InProgress" }.map { row -> row.toDomain(loadSections(row.id)) } }
 
     override suspend fun getById(id: String): Course? =
@@ -263,7 +265,7 @@ class CourseRepositoryImpl(
         val total = course.sections.sumOf { it.lessons.size }
         val done = course.sections.sumOf { it.lessons.count { l -> l.isCompleted } }
         val progress = if (total == 0) 0.0 else done * 100.0 / total
-        db.q.updateCourseProgress(progress, progress, now, courseId)
+        db.q.updateCourseProgress(progress, progress.toLong(), now, courseId)
         return getById(courseId)
     }
 
@@ -282,16 +284,16 @@ class MediaRepositoryImpl(
 ) : MediaRepository {
 
     override fun observeAll(): Flow<List<MediaItem>> =
-        db.q.selectAllMedia().asFlow().map { it.list }.map { rows -> rows.map { it.toDomain() } }
+        db.q.selectAllMedia().asFlow().mapToList(Dispatchers.IO).map { rows -> rows.map { it.toDomain() } }
 
     override fun observeByType(type: MediaType): Flow<List<MediaItem>> =
-        db.q.selectMediaByType(type.name).asFlow().map { it.list }.map { rows -> rows.map { it.toDomain() } }
+        db.q.selectMediaByType(type.name).asFlow().mapToList(Dispatchers.IO).map { rows -> rows.map { it.toDomain() } }
 
     override fun observeWatching(): Flow<List<MediaItem>> =
-        db.q.selectWatchingMedia().asFlow().map { it.list }.map { rows -> rows.map { it.toDomain() } }
+        db.q.selectWatchingMedia().asFlow().mapToList(Dispatchers.IO).map { rows -> rows.map { it.toDomain() } }
 
     override fun observeFavorites(): Flow<List<MediaItem>> =
-        db.q.selectAllMedia().asFlow().map { it.list }.map { rows -> rows.filter { it.isFavorite == 1L }.map { it.toDomain() } }
+        db.q.selectAllMedia().asFlow().mapToList(Dispatchers.IO).map { rows -> rows.filter { it.isFavorite == 1L }.map { it.toDomain() } }
 
     override suspend fun getById(id: String): MediaItem? =
         db.q.selectAllMedia().executeAsList().firstOrNull { it.id == id }?.toDomain()

@@ -4,7 +4,7 @@ import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import java.io.File
 
 actual class LifeForgeDb internal constructor(
-    override val database: com.lifeforge.os.data.database.LifeForgeDatabase,
+    actual val database: com.lifeforge.os.data.database.LifeForgeDatabase,
 ) {
     actual companion object {
         @Volatile

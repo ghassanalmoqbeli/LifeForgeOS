@@ -10,6 +10,8 @@ import com.lifeforge.os.domain.repository.RecoveryRepository
 import com.lifeforge.os.domain.repository.TimerRepository
 import com.lifeforge.os.sync.SyncStatus
 import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlin.math.roundToLong
@@ -21,7 +23,7 @@ class RecoveryRepositoryImpl(
 ) : RecoveryRepository {
 
     override fun observeEntries(): Flow<List<RecoveryEntry>> =
-        db.q.selectAllRecoveryEntries().asFlow().map { it.list }.map { rows -> rows.map { it.toDomain() } }
+        db.q.selectAllRecoveryEntries().asFlow().mapToList(Dispatchers.IO).map { rows -> rows.map { it.toDomain() } }
 
     override suspend fun saveEntry(entry: RecoveryEntry) {
         val now = System.currentTimeMillis()
@@ -84,7 +86,7 @@ class RecoveryRepositoryImpl(
         db.q.selectAllRecoveryEntries().executeAsList().count { it.isRelapse == 1L }
 
     override fun observeTasks(): Flow<List<RecoveryTask>> =
-        db.q.selectAllRecoveryTasks().asFlow().map { it.list }.map { rows -> rows.map { it.toDomain() } }
+        db.q.selectAllRecoveryTasks().asFlow().mapToList(Dispatchers.IO).map { rows -> rows.map { it.toDomain() } }
 
     override suspend fun toggleTask(taskId: String, date: Long, completed: Boolean) {
         val existing = db.q.selectRecoveryTaskLog(taskId, date).executeAsOneOrNull()
@@ -109,7 +111,7 @@ class TimerRepositoryImpl(
 ) : TimerRepository {
 
     override fun observePresets(): Flow<List<TimerPreset>> =
-        db.q.selectAllTimerPresets().asFlow().map { it.list }.map { rows -> rows.map { it.toDomain() } }
+        db.q.selectAllTimerPresets().asFlow().mapToList(Dispatchers.IO).map { rows -> rows.map { it.toDomain() } }
 
     override suspend fun getById(id: String): TimerPreset? =
         db.q.selectTimerPresetById(id).executeAsOneOrNull()?.toDomain()

@@ -3,7 +3,7 @@ package com.lifeforge.os.data.database
 import app.cash.sqldelight.driver.native.NativeSqliteDriver
 
 actual class LifeForgeDb internal constructor(
-    override val database: com.lifeforge.os.data.database.LifeForgeDatabase,
+    actual val database: com.lifeforge.os.data.database.LifeForgeDatabase,
 ) {
     actual companion object {
         @Volatile

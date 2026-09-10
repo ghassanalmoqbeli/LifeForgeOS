@@ -59,6 +59,7 @@ kotlin {
         val androidMain by getting {
             dependencies {
                 implementation(libs.kotlinx.coroutines.android)
+                implementation(libs.kotlinx.coroutines.play.services)
                 implementation(libs.androidx.datastore.preferences)
                 implementation(libs.androidx.datastore.core)
                 implementation(libs.androidx.lifecycle.runtime)
@@ -132,6 +133,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     packagingOptions {
         resources.excludes += "META-INF/*"

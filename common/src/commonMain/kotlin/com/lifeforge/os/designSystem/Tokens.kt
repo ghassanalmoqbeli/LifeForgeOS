@@ -1,7 +1,12 @@
 package com.lifeforge.os.designSystem
 
-import androidx.compose.animation.core.Easing
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.DampingRatioHighBouncy
+import androidx.compose.animation.core.DampingRatioMediumBouncy
 import androidx.compose.animation.core.SpringSpec
+import androidx.compose.animation.core.StiffnessHigh
+import androidx.compose.animation.core.StiffnessLow
+import androidx.compose.animation.core.StiffnessMedium
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -444,34 +449,34 @@ object MotionTokens {
     val DurationSlowest = 500
 
     // Easing
-    val EaseInOut = Easing(0.4f, 0.0f, 0.2f, 1.0f)
-    val EaseOut = Easing(0.0f, 0.0f, 0.2f, 1.0f)
-    val EaseIn = Easing(0.4f, 0.0f, 1.0f, 1.0f)
-    val EaseOutExpo = Easing(0.16f, 1.0f, 0.3f, 1.0f)
+    val EaseInOut = CubicBezierEasing(0.4f, 0.0f, 0.2f, 1.0f)
+    val EaseOut = CubicBezierEasing(0.0f, 0.0f, 0.2f, 1.0f)
+    val EaseIn = CubicBezierEasing(0.4f, 0.0f, 1.0f, 1.0f)
+    val EaseOutExpo = CubicBezierEasing(0.16f, 1.0f, 0.3f, 1.0f)
 
     // Standard easing (Material)
     val StandardEasing = EaseInOut
-    val EmphasizedEasing = Easing(0.05f, 0.0f, 0.0f, 1.0f)
+    val EmphasizedEasing = CubicBezierEasing(0.05f, 0.0f, 0.0f, 1.0f)
     val ExpressiveEasing = EaseOutExpo
 
     // Specs
-    val FastTween: TweenSpec = tween(DurationFast, easing = StandardEasing)
-    val MediumTween: TweenSpec = tween(DurationMedium, easing = StandardEasing)
-    val SlowTween: TweenSpec = tween(DurationSlow, easing = StandardEasing)
+    val FastTween: TweenSpec<Float> = tween(DurationFast, easing = StandardEasing)
+    val MediumTween: TweenSpec<Float> = tween(DurationMedium, easing = StandardEasing)
+    val SlowTween: TweenSpec<Float> = tween(DurationSlow, easing = StandardEasing)
 
     val StandardSpring: SpringSpec<Float> = spring(
-        dampingRatio = SpringSpec.DampingRatioMediumBouncy,
-        stiffness = SpringSpec.StiffnessMedium
+        dampingRatio = DampingRatioMediumBouncy,
+        stiffness = StiffnessMedium
     )
 
     val BouncySpring: SpringSpec<Float> = spring(
-        dampingRatio = SpringSpec.DampingRatioMediumBouncy,
-        stiffness = SpringSpec.StiffnessLow
+        dampingRatio = DampingRatioMediumBouncy,
+        stiffness = StiffnessLow
     )
 
     val StiffSpring: SpringSpec<Float> = spring(
-        dampingRatio = SpringSpec.DampingRatioHighBouncy,
-        stiffness = SpringSpec.StiffnessHigh
+        dampingRatio = DampingRatioHighBouncy,
+        stiffness = StiffnessHigh
     )
 
     // Semantic

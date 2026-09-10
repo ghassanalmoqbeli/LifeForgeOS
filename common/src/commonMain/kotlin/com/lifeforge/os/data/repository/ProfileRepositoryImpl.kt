@@ -7,7 +7,8 @@ import com.lifeforge.os.domain.repository.SettingsRepository
 import com.lifeforge.os.domain.repository.UserProfileRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 
 class UserProfileRepositoryImpl(
     private val preferences: PreferencesManager,
@@ -26,7 +27,7 @@ class UserProfileRepositoryImpl(
         }
 
     override suspend fun getProfile(): UserProfile? {
-        val name = preferences.userName.firstNullable()
+        val name = preferences.userName.firstOrNull()
         return if (name.isNullOrBlank()) null
         else UserProfile(
             name = name,
@@ -63,8 +64,3 @@ class SettingsRepositoryImpl(
     override suspend fun getWaterGoal(): Int = preferences.waterGoal.first()
     override suspend fun setWaterGoal(water: Int) = preferences.setWaterGoal(water)
 }
-
-private suspend fun <T> Flow<T>.firstOrNull(): T? = kotlinx.coroutines.flow.firstOrNull()
-private suspend fun <T> Flow<T?>.firstNullable(): T? = kotlinx.coroutines.flow.firstOrNull()
-
-private suspend fun <T> Flow<T>.first(): T = kotlinx.coroutines.flow.first()

@@ -97,7 +97,7 @@ class SyncManagerImpl(
         syncEngine.forceSync(entityType, entityId)
     }
 
-    override fun getSyncStatus(entityType: String, entityId: String): SyncStatus? {
+    override suspend fun getSyncStatus(entityType: String, entityId: String): SyncStatus? {
         return syncRepository.getSyncStatus(entityType, entityId)
     }
 
@@ -157,7 +157,7 @@ interface SyncManager {
     fun initialize(context: Any?)
     suspend fun syncNow()
     suspend fun forceSync(entityType: String, entityId: String)
-    fun getSyncStatus(entityType: String, entityId: String): SyncStatus?
+suspend fun getSyncStatus(entityType: String, entityId: String): SyncStatus?
     fun getPendingConflicts(): List<SyncConflict>
     fun resolveConflict(conflict: SyncConflict, resolution: ConflictResolution)
     fun enableSync()

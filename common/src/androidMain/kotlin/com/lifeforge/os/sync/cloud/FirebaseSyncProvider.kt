@@ -33,7 +33,7 @@ class FirebaseSyncProvider(
         val user = auth.currentUser ?: return Result.Failure(
             com.lifeforge.os.core.utils.AppError.Auth("Not authenticated")
         )
-        val token = user.getIdToken(true).await
+        val token = user.getIdToken(true).await()
         Result.Success(
             AuthResult(
                 userId = user.uid,
@@ -50,8 +50,8 @@ class FirebaseSyncProvider(
     }
 
     override suspend fun signIn(email: String, password: String): Result<AuthResult> = try {
-        val result = auth.signInWithEmailAndPassword(email, password).await
-        val token = result.user?.getIdToken(true)?.await
+        val result = auth.signInWithEmailAndPassword(email, password).await()
+        val token = result.user?.getIdToken(true)?.await()
         Result.Success(
             AuthResult(
                 userId = result.user!!.uid,
@@ -68,8 +68,8 @@ class FirebaseSyncProvider(
     }
 
     override suspend fun signUp(email: String, password: String): Result<AuthResult> = try {
-        val result = auth.createUserWithEmailAndPassword(email, password).await
-        val token = result.user?.getIdToken(true)?.await
+        val result = auth.createUserWithEmailAndPassword(email, password).await()
+        val token = result.user?.getIdToken(true)?.await()
         Result.Success(
             AuthResult(
                 userId = result.user!!.uid,
@@ -110,12 +110,12 @@ class FirebaseSyncProvider(
 
         // Firestore expects a Map<String, Any> for nested objects.
         val writable = docJson.mapValues { (_, v) -> jsonValueToFirestore(v) }
-        docRef.set(writable, SetOptions.merge()).await
+        docRef.set(writable, SetOptions.merge()).await()
 
         SyncResult(isSuccess = true, remoteVersion = operation.version)
     } catch (e: Exception) {
         val remote = try {
-            val doc = userCollection(operation.entityType).document(operation.entityId).get().await
+            val doc = userCollection(operation.entityType).document(operation.entityId).get().await()
             if (doc.exists()) {
                 RemoteRecord(
                     entityType = operation.entityType,
@@ -132,7 +132,7 @@ class FirebaseSyncProvider(
     }
 
     override suspend fun delete(operation: SyncOperation): SyncResult = try {
-        userCollection(operation.entityType).document(operation.entityId).delete().await
+        userCollection(operation.entityType).document(operation.entityId).delete().await()
         SyncResult(isSuccess = true)
     } catch (e: Exception) {
         SyncResult(isSuccess = false, error = e.message)
@@ -144,7 +144,7 @@ class FirebaseSyncProvider(
     ): Result<List<RemoteRecord>> = try {
         var query = userCollection(entityType)
         filters.forEach { (k, v) -> query = query.whereEqualTo(k, v) }
-        val snapshot = query.get().await
+        val snapshot = query.get().await()
         val records = snapshot.documents.map { doc ->
             RemoteRecord(
                 entityType = entityType,
