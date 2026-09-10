@@ -36,6 +36,15 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file(properties["lifeforgeReleaseStoreFile"] as String)
+            storePassword = properties["lifeforgeReleaseStorePassword"] as String
+            keyAlias = properties["lifeforgeReleaseKeyAlias"] as String
+            keyPassword = properties["lifeforgeReleaseKeyPassword"] as String
+        }
+    }
+
     buildTypes {
         getByName("debug") {
             isDebuggable = true
@@ -52,15 +61,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-        }
-    }
-
-    signingConfigs {
-        create("release") {
-            storeFile = file(properties["lifeforgeReleaseStoreFile"] as String)
-            storePassword = properties["lifeforgeReleaseStorePassword"] as String
-            keyAlias = properties["lifeforgeReleaseKeyAlias"] as String
-            keyPassword = properties["lifeforgeReleaseKeyPassword"] as String
         }
     }
 
