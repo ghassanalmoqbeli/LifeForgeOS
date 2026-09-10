@@ -1649,9 +1649,9 @@ SELECT * FROM MediaItem WHERE deletedAt IS NULL ORDER BY updatedAt DESC;
 
 insertMediaItem:
 INSERT OR REPLACE INTO MediaItem
-    (id, type, title, titleAr, imageUrl, backdropUrl, description, externalUrl, status, rating,
+(id, type, title, titleAr, imageUrl, backdropUrl, description, externalUrl, status, rating,
      personalRating, review, tags, isFavorite, progressPercent, createdAt, updatedAt, deviceId, syncStatus)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- ============================================================
 -- RECOVERY
@@ -1746,8 +1746,8 @@ SELECT * FROM WorkoutExercise WHERE dayId = ? AND deletedAt IS NULL ORDER BY exe
 
 insertWorkoutExercise:
 INSERT OR REPLACE INTO WorkoutExercise
-    (id, dayId, exerciseId, exerciseOrder, setsTarget, repsTarget, weightTarget, restSeconds, notes, createdAt, updatedAt, deviceId, syncStatus)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+(id, dayId, exerciseId, exerciseOrder, setsTarget, repsTarget, weightTarget, restSeconds, notes, createdAt, updatedAt, deviceId, syncStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 setActiveWorkoutProgram:
 UPDATE WorkoutProgram SET isActive = CASE WHEN id = ? THEN 1 ELSE 0 END, updatedAt = ?, syncStatus = 'Pending' WHERE deletedAt IS NULL;
