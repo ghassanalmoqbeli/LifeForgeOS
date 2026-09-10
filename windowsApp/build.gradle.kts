@@ -10,22 +10,6 @@ plugins {
 kotlin {
     jvm("desktop")
 
-    targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmTarget> {
-        compilations.forEach { compilation ->
-            compilation.compileTaskProvider.configure {
-                compilerOptions {
-                    freeCompilerArgs.addAll(
-                        listOf(
-                            "-Xopt-in=kotlin.RequiresOptIn",
-                            "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-                            "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi"
-                        )
-                    )
-                }
-            }
-        }
-    }
-
     sourceSets {
         val desktopMain by getting {
             dependencies {
@@ -51,7 +35,7 @@ compose.desktop {
         mainClass = "com.lifeforge.os.windows.MainKt"
 
         nativeDistributions {
-            targetFormats(TargetFormat.MsiDirectory, TargetFormat.Exe, TargetFormat.Msi)
+            targetFormats(TargetFormat.Exe)
             packageName = "LifeForge OS"
             packageVersion = "1.0.0"
             description = "Premium Personal Life OS for Windows & Android"
@@ -65,5 +49,15 @@ compose.desktop {
                 console = false
             }
         }
+    }
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    kotlinOptions {
+        freeCompilerArgs += listOf(
+            "-Xopt-in=kotlin.RequiresOptIn",
+            "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+            "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi"
+        )
     }
 }
