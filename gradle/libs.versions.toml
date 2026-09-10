@@ -139,6 +139,4 @@ compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose" 
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
-ksp = { id = "com.google.devtools.ksp", version = "2.0.0-1.0.13" }
-flyway = { id = "org.flywaydb.flyway", version.ref = "flyway" }
 sqldelight = { id = "com.squareup.sqldelight", version.ref = "sqldelight" }
