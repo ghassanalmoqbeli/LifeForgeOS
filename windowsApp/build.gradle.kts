@@ -12,6 +12,8 @@ kotlin {
 
     sourceSets {
         val desktopMain by getting {
+            kotlin.srcDir("src/main/kotlin")
+
             dependencies {
                 implementation(project(":common"))
                 implementation(compose.runtime)
