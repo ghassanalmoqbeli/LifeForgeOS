@@ -1,14 +1,10 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.google.services)
-}
-
-kotlin {
-    androidTarget()
 }
 
 android {
@@ -113,11 +109,11 @@ dependencies {
     testImplementation(libs.kotlin.test)
     testImplementation(libs.turbine)
     testImplementation(libs.mockk)
+    androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(compose.ui.test.android)
-    androidTestImplementation(compose.ui.test.junit4)
-    androidTestImplementation(compose.ui.test.manifest)
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
