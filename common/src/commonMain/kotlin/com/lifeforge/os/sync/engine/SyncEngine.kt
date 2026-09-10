@@ -2,6 +2,7 @@ package com.lifeforge.os.sync.engine
 
 import com.lifeforge.os.core.logging.LifeForgeLogger
 import com.lifeforge.os.core.utils.CoroutineScopeProvider
+import com.lifeforge.os.core.utils.randomUuid
 import com.lifeforge.os.sync.SyncStatus
 import com.lifeforge.os.sync.cloud.CloudSyncProvider
 import com.lifeforge.os.sync.cloud.SyncResult
@@ -27,7 +28,7 @@ class SyncEngineImpl(
     override fun enqueue(operation: SyncOperation) {
         scopeProvider.ioScope.launch {
             syncQueue.add(operation)
-            _pendingOperations.value = syncQueue.size
+            _pendingOperations.value = syncQueue.size()
             processQueue()
         }
     }
@@ -39,7 +40,7 @@ class SyncEngineImpl(
             }
             if (op != null) {
                 syncQueue.addToFront(op)
-                _pendingOperations.value = syncQueue.size
+                _pendingOperations.value = syncQueue.size()
                 processQueue()
             }
         }
@@ -49,7 +50,7 @@ class SyncEngineImpl(
         scopeProvider.ioScope.launch {
             val ops = getPendingChanges()
             ops.forEach { syncQueue.add(it) }
-            _pendingOperations.value = syncQueue.size
+            _pendingOperations.value = syncQueue.size()
             processQueue()
         }
     }
@@ -82,7 +83,7 @@ class SyncEngineImpl(
                     scheduleRetry(operation)
                 }
 
-                _pendingOperations.value = syncQueue.size
+                _pendingOperations.value = syncQueue.size()
             }
         }
     }
@@ -97,7 +98,7 @@ class SyncEngineImpl(
         scopeProvider.ioScope.launch {
             kotlinx.coroutines.delay(delay)
             syncQueue.add(operation)
-            _pendingOperations.value = syncQueue.size
+            _pendingOperations.value = syncQueue.size()
         }
     }
 
@@ -135,6 +136,6 @@ data class SyncOperation(
     companion object {
         private var cachedDeviceId: String? = null
         fun getDeviceId(): String =
-            cachedDeviceId ?: kp.uuid.UUID.random().toString().also { cachedDeviceId = it }
+            cachedDeviceId ?: randomUuid().also { cachedDeviceId = it }
     }
 }

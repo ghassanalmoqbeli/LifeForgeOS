@@ -2,6 +2,7 @@ package com.lifeforge.os.core.di
 
 import com.lifeforge.os.core.preferences.KeyValueStore
 import com.lifeforge.os.data.database.LifeForgeDb
+import com.lifeforge.os.security.AppLockManager
 import com.lifeforge.os.security.BiometricAuthenticator
 import com.lifeforge.os.security.PinCodeHasher
 import com.lifeforge.os.sync.cloud.CloudSyncProvider
@@ -16,6 +17,7 @@ interface PlatformBindings {
     val cloudSyncProvider: CloudSyncProvider?
     val biometricAuthenticator: BiometricAuthenticator
     val pinCodeHasher: PinCodeHasher
+    val appLockManager: AppLockManager
 }
 
 expect fun createPlatformBindings(context: Any?): PlatformBindings

@@ -1,8 +1,8 @@
 package com.lifeforge.os.data.database
 
 import android.content.Context
-import com.squareup.sqldelight.android.AndroidSqliteDriver
-import com.squareup.sqldelight.db.SqlDriver
+import app.cash.sqldelight.driver.android.AndroidSqliteDriver
+import app.cash.sqldelight.db.SqlDriver
 
 actual class LifeForgeDb private constructor(
     override val database: com.lifeforge.os.data.database.LifeForgeDatabase,

@@ -11,8 +11,8 @@ import com.lifeforge.os.domain.repository.ExerciseRepository
 import com.lifeforge.os.domain.repository.WorkoutProgramRepository
 import com.lifeforge.os.domain.repository.WorkoutRepository
 import com.lifeforge.os.sync.SyncStatus
-import com.squareup.sqldelight.runtime.coroutines.asFlow
-import com.squareup.sqldelight.runtime.coroutines.mapToOneOrNull
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToOneOrNull
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull

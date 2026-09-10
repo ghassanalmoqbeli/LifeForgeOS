@@ -1,5 +1,7 @@
 package com.lifeforge.os.data.repository
 
+import kotlinx.serialization.encodeToString
+
 import com.lifeforge.os.data.database.LifeForgeDb
 import com.lifeforge.os.domain.model.RecoveryEntry
 import com.lifeforge.os.domain.model.RecoveryTask
@@ -7,7 +9,7 @@ import com.lifeforge.os.domain.model.TimerPreset
 import com.lifeforge.os.domain.repository.RecoveryRepository
 import com.lifeforge.os.domain.repository.TimerRepository
 import com.lifeforge.os.sync.SyncStatus
-import com.squareup.sqldelight.runtime.coroutines.asFlow
+import app.cash.sqldelight.coroutines.asFlow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlin.math.roundToLong
@@ -91,7 +93,7 @@ class RecoveryRepositoryImpl(
             id = existing?.id ?: generateId(),
             taskId = taskId,
             date = date,
-            value = null,
+            value_ = null,
             isCompleted = if (completed) 1L else 0L,
             notes = null,
             createdAt = existing?.createdAt ?: now,

@@ -3,7 +3,6 @@ package com.lifeforge.os.data.repository
 import com.lifeforge.os.core.preferences.PreferencesManager
 import com.lifeforge.os.core.preferences.Units
 import com.lifeforge.os.core.preferences.UserProfile
-import com.lifeforge.os.domain.repository.ProfileRepositories
 import com.lifeforge.os.domain.repository.SettingsRepository
 import com.lifeforge.os.domain.repository.UserProfileRepository
 import kotlinx.coroutines.flow.Flow
@@ -15,15 +14,14 @@ class UserProfileRepositoryImpl(
 ) : UserProfileRepository {
 
     override val profile: Flow<UserProfile?> =
-        combine(preferences.userName, preferences.userAge, preferences.userHeight, preferences.userWeight, preferences.userGoalWeight) { args ->
-            val name = args[0]
+        combine(preferences.userName, preferences.userAge, preferences.userHeight, preferences.userWeight, preferences.userGoalWeight) { name, age, height, weight, goalWeight ->
             if (name.isNullOrBlank()) null
             else UserProfile(
                 name = name,
-                age = args[1],
-                height = args[2],
-                weight = args[3],
-                goalWeight = args[4],
+                age = age,
+                height = height,
+                weight = weight,
+                goalWeight = goalWeight,
             )
         }
 

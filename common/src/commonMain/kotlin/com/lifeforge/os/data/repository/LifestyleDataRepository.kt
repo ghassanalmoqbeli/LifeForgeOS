@@ -14,9 +14,9 @@ import com.lifeforge.os.domain.repository.NutritionRepository
 import com.lifeforge.os.domain.repository.RoutineRepository
 import com.lifeforge.os.domain.repository.WaterRepository
 import com.lifeforge.os.sync.SyncStatus
-import com.squareup.sqldelight.runtime.coroutines.asFlow
-import com.squareup.sqldelight.runtime.coroutines.mapToOne
-import com.squareup.sqldelight.runtime.coroutines.mapToOneOrNull
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToOne
+import app.cash.sqldelight.coroutines.mapToOneOrNull
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
@@ -248,7 +248,7 @@ class HabitRepositoryImpl(
             id = logId,
             habitId = habitId,
             date = date,
-            value = null,
+            value_ = null,
             isCompleted = if (isCompleted) 1L else 0L,
             notes = null,
             createdAt = existing?.createdAt ?: now,

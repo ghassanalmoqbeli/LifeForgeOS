@@ -69,7 +69,6 @@ import com.lifeforge.os.presentation.settings.SettingsViewModel
 import com.lifeforge.os.presentation.tasks.TasksViewModel
 import com.lifeforge.os.presentation.timers.TimersViewModel
 import com.lifeforge.os.security.AppLockManager
-import com.lifeforge.os.security.AppLockManagerImpl
 import com.lifeforge.os.security.BiometricAuthenticator
 import com.lifeforge.os.security.PinCodeHasher
 import com.lifeforge.os.sync.SyncManager
@@ -150,7 +149,7 @@ val koinModules: Module = module {
     // Security
     single<PinCodeHasher> { get<PlatformBindings>().pinCodeHasher }
     single<BiometricAuthenticator> { get<PlatformBindings>().biometricAuthenticator }
-    single<AppLockManager> { AppLockManagerImpl(get(), get(), get(), get(), get()) }
+    single<AppLockManager> { get<PlatformBindings>().appLockManager }
 
     // Cloud sync
     single<CloudSyncProvider> { get<PlatformBindings>().cloudSyncProvider ?: NoopCloudSyncProvider() }
@@ -186,8 +185,12 @@ val koinModules: Module = module {
 fun startKoin(context: Any?) {
     if (org.koin.core.context.GlobalContext.getOrNull() == null) {
         startKoin {
-            modules(koinModules)
-            single<PlatformBindings> { createPlatformBindings(context) }
+            modules(
+                koinModules,
+                module {
+                    single<PlatformBindings> { createPlatformBindings(context) }
+                },
+            )
         }
     }
 }

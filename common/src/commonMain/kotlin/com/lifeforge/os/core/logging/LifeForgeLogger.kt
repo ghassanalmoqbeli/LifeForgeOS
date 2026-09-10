@@ -19,23 +19,23 @@ class LifeForgeLoggerImpl : LifeForgeLogger {
         initialized = true
     }
 
-    override fun debug(tag: String, message: String, throwable: Throwable? = null) {
+    override fun debug(tag: String, message: String, throwable: Throwable?) {
         if (logLevel.ordinal <= LogLevel.DEBUG.ordinal) log(LogLevel.DEBUG, tag, message, throwable)
     }
 
-    override fun info(tag: String, message: String, throwable: Throwable? = null) {
+    override fun info(tag: String, message: String, throwable: Throwable?) {
         if (logLevel.ordinal <= LogLevel.INFO.ordinal) log(LogLevel.INFO, tag, message, throwable)
     }
 
-    override fun warning(tag: String, message: String, throwable: Throwable? = null) {
+    override fun warning(tag: String, message: String, throwable: Throwable?) {
         if (logLevel.ordinal <= LogLevel.WARNING.ordinal) log(LogLevel.WARNING, tag, message, throwable)
     }
 
-    override fun error(tag: String, message: String, throwable: Throwable? = null) {
+    override fun error(tag: String, message: String, throwable: Throwable?) {
         if (logLevel.ordinal <= LogLevel.ERROR.ordinal) log(LogLevel.ERROR, tag, message, throwable)
     }
 
-    override fun wtf(tag: String, message: String, throwable: Throwable? = null) {
+    override fun wtf(tag: String, message: String, throwable: Throwable?) {
         log(LogLevel.WTF, tag, message, throwable)
     }
 

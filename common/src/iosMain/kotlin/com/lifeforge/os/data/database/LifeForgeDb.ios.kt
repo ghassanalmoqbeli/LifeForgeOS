@@ -1,6 +1,6 @@
 package com.lifeforge.os.data.database
 
-import com.squareup.sqldelight.drivers.native.NativeSqliteDriver
+import app.cash.sqldelight.driver.native.NativeSqliteDriver
 
 actual class LifeForgeDb internal constructor(
     override val database: com.lifeforge.os.data.database.LifeForgeDatabase,

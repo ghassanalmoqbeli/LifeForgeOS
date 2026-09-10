@@ -16,7 +16,7 @@ import com.lifeforge.os.domain.repository.JournalRepository
 import com.lifeforge.os.domain.repository.MediaRepository
 import com.lifeforge.os.domain.repository.NoteRepository
 import com.lifeforge.os.sync.SyncStatus
-import com.squareup.sqldelight.runtime.coroutines.asFlow
+import app.cash.sqldelight.coroutines.asFlow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

@@ -9,7 +9,7 @@ import com.lifeforge.os.sync.engine.SyncOperation
  * the rest of the app can depend on [CloudSyncProvider] unconditionally.
  */
 class NoopCloudSyncProvider : CloudSyncProvider {
-    private val unavailable = Result.Failure<Nothing>(AppError.Auth("Cloud sync is not available on this platform"))
+    private val unavailable = Result.Failure(AppError.Auth("Cloud sync is not available on this platform"))
 
     override suspend fun ensureAuthenticated(): Result<AuthResult> = unavailable
     override suspend fun signIn(email: String, password: String): Result<AuthResult> = unavailable

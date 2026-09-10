@@ -1,5 +1,11 @@
 package com.lifeforge.os.designSystem
 
+import androidx.compose.animation.core.Easing
+import androidx.compose.animation.core.SpringSpec
+import androidx.compose.animation.core.TweenSpec
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -372,7 +378,6 @@ object SpacingTokens {
 // ============================================================
 
 object ShapeTokens {
-    import androidx.compose.foundation.shape.RoundedCornerShape
 
     val None = RoundedCornerShape(0.dp)
     val Xs = RoundedCornerShape(4.dp)
@@ -430,11 +435,6 @@ object ElevationTokens {
 // ============================================================
 
 object MotionTokens {
-    import androidx.compose.animation.core.tween
-    import androidx.compose.animation.core.spring
-    import androidx.compose.animation.core.Easing
-    import androidx.compose.animation.core.SpringSpec
-    import androidx.compose.animation.core.TweenSpec
 
     // Durations
     val DurationInstant = 0

@@ -6,8 +6,8 @@ import com.lifeforge.os.domain.repository.SyncRepository
 import com.lifeforge.os.sync.SyncConflict
 import com.lifeforge.os.sync.SyncRecord
 import com.lifeforge.os.sync.SyncStatus
-import com.squareup.sqldelight.runtime.coroutines.asFlow
-import com.squareup.sqldelight.runtime.coroutines.mapToList
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

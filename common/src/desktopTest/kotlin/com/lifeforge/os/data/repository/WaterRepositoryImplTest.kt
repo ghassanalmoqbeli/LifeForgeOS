@@ -2,7 +2,7 @@ package com.lifeforge.os.data.repository
 
 import com.lifeforge.os.data.database.LifeForgeDb
 import com.lifeforge.os.core.utils.startOfTodayMillis
-import com.squareup.sqldelight.jdbc.JdbcSqliteDriver
+import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test

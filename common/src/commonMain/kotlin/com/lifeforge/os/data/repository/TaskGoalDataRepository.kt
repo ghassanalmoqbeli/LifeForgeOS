@@ -6,7 +6,7 @@ import com.lifeforge.os.domain.model.Task
 import com.lifeforge.os.domain.repository.GoalRepository
 import com.lifeforge.os.domain.repository.TaskRepository
 import com.lifeforge.os.sync.SyncStatus
-import com.squareup.sqldelight.runtime.coroutines.asFlow
+import app.cash.sqldelight.coroutines.asFlow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

@@ -15,7 +15,7 @@ sealed interface Result<out T> {
 
     fun getError(): AppError? = (this as? Failure)?.error
 
-    inline fun <R> map(transform: (T) -> R): Result<R> =
+    fun <R> map(transform: (T) -> R): Result<R> =
         when (this) {
             is Success -> Result.Success(transform(value))
             is Failure -> this
@@ -36,6 +36,7 @@ inline fun <T> Result<T>.onFailure(block: (AppError) -> Unit): Result<T> {
  * Structured error model. Every error maps to a user-friendly message.
  */
 sealed interface AppError {
+    val message: String
     data class Network(val message: String, val cause: Throwable? = null) : AppError
     data class Database(val message: String, val cause: Throwable? = null) : AppError
     data class Validation(val field: String?, val message: String) : AppError

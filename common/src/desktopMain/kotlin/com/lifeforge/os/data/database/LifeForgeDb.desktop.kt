@@ -1,6 +1,6 @@
 package com.lifeforge.os.data.database
 
-import com.squareup.sqldelight.jdbc.JdbcSqliteDriver
+import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import java.io.File
 
 actual class LifeForgeDb internal constructor(

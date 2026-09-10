@@ -3,7 +3,7 @@ package com.lifeforge.os.sync
 import com.lifeforge.os.core.logging.LifeForgeLogger
 import com.lifeforge.os.core.preferences.PreferencesManager
 import com.lifeforge.os.core.utils.CoroutineScopeProvider
-import com.lifeforge.os.data.repository.SyncRepository
+import com.lifeforge.os.domain.repository.SyncRepository
 import com.lifeforge.os.sync.cloud.CloudSyncProvider
 import com.lifeforge.os.sync.conflict.ConflictResolver
 import com.lifeforge.os.sync.engine.SyncEngine
