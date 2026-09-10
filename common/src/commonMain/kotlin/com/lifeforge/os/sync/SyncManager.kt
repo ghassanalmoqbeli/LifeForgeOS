@@ -138,7 +138,7 @@ class SyncManagerImpl(
                 preferencesManager.setLastSyncTime(System.currentTimeMillis())
             } else {
                 _syncStatus.value = SyncStatus.Error
-                logger.error("SyncManager", "Auth failed: ${authResult.getError()?.message}")
+                logger.error("SyncManager", "Auth failed: ${authResult.getErrorOrNull()?.message}")
             }
         } catch (e: Exception) {
             _syncStatus.value = SyncStatus.Error

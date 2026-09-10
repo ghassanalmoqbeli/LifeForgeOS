@@ -13,7 +13,7 @@ sealed interface Result<out T> {
 
     fun getOrNull(): T? = (this as? Success)?.value
 
-    fun getError(): AppError? = (this as? Failure)?.error
+    fun getErrorOrNull(): AppError? = (this as? Failure)?.error
 
     fun <R> map(transform: (T) -> R): Result<R> =
         when (this) {

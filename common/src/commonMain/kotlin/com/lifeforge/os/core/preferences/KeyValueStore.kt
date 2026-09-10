@@ -1,5 +1,6 @@
 package com.lifeforge.os.core.preferences
 
+import kotlin.jvm.JvmName
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -7,6 +8,7 @@ import kotlinx.coroutines.flow.Flow
  * (DataStore on Android, properties/prefs file on Desktop).
  */
 interface KeyValueStore {
+    @JvmName("observeStringNullable")
     fun observeString(key: String, default: String?): Flow<String?>
     fun observeString(key: String, default: String): Flow<String>
     fun observeInt(key: String, default: Int): Flow<Int>

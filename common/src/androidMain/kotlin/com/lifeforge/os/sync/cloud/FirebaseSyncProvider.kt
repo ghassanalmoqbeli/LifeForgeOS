@@ -13,7 +13,7 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.obj
+import kotlinx.serialization.json.jsonObject
 
 class FirebaseSyncProvider(
     private val context: Context,
@@ -105,7 +105,7 @@ class FirebaseSyncProvider(
     override suspend fun upsert(operation: SyncOperation): SyncResult = try {
         val docRef = userCollection(operation.entityType).document(operation.entityId)
 
-        val docJson = json.parseToJsonElement(operation.data).obj
+        val docJson = json.parseToJsonElement(operation.data).jsonObject
             .plus("version" to kotlinx.serialization.json.JsonPrimitive(operation.version))
             .plus("deviceId" to kotlinx.serialization.json.JsonPrimitive(operation.deviceId))
             .plus("updatedAt" to kotlinx.serialization.json.JsonPrimitive(operation.version))

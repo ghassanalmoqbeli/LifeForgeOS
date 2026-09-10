@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import kotlin.jvm.JvmName
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -17,6 +18,7 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 
 class DataStoreKeyValueStore(private val context: Context) : KeyValueStore {
 
+    @JvmName("observeStringNullable")
     override fun observeString(key: String, default: String?): Flow<String?> =
         context.dataStore.data.map { prefs -> prefs[stringPreferencesKey(key)] ?: default }
 
