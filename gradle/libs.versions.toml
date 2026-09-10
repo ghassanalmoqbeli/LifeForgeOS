@@ -25,7 +25,7 @@ kotlinxDatetime = "0.6.0"
 kotlinxSerialization = "1.6.2"
 okio = "3.6.0"
 sqldelight = "2.0.1"
-koin = "3.5.6"
+koin = "4.0.0"
 arrow = "1.2.4"
 kermit = "2.6.0"
 uuid = "0.7.0"
@@ -54,7 +54,7 @@ compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose" }
 compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose" }
 compose-components-resources = { module = "androidx.compose.ui:ui-resources", version.ref = "compose" }
 compose-navigation = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation" }
-compose-navigation-serialization = { module = "org.jetbrains.androidx.navigation:navigation-serialization", version.ref = "navigation" }
+
 compose-desktop-webview = { module = "org.jetbrains.compose.desktop:webview", version.ref = "compose" }
 compose-desktop-window = { module = "org.jetbrains.compose.desktop:window", version.ref = "compose" }
 
@@ -109,8 +109,6 @@ sqldelight-gradle-plugin = { module = "app.cash.sqldelight:gradle-plugin", versi
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
-koin-androidx-viewmodel = { module = "io.insert-koin:koin-androidx-viewmodel", version.ref = "koin" }
-koin-androidx-scope = { module = "io.insert-koin:koin-androidx-scope", version.ref = "koin" }
 
 # Arrow
 arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }

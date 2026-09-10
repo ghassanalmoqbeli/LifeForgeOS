@@ -36,7 +36,6 @@ kotlin {
 
                 // Navigation
                 implementation(libs.compose.navigation)
-                implementation(libs.compose.navigation.serialization)
 
                 // Koin DI
                 implementation(libs.koin.core)
