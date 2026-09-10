@@ -95,11 +95,21 @@ kotlin {
             }
         }
 
-        val iosMain by getting {
+        val iosMain by creating {
+            dependsOn(commonMain.get())
             dependencies {
                 implementation(libs.kotlinx.coroutines.ios)
                 implementation(libs.sqldelight.native)
             }
+        }
+        val iosX64Main by getting {
+            dependsOn(iosMain)
+        }
+        val iosArm64Main by getting {
+            dependsOn(iosMain)
+        }
+        val iosSimulatorArm64Main by getting {
+            dependsOn(iosMain)
         }
 
         val commonTest by getting {
