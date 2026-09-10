@@ -71,8 +71,6 @@ kotlin {
 
         val desktopMain by getting {
             dependencies {
-                implementation(libs.compose.desktop.webview)
-                implementation(libs.compose.desktop.window)
                 implementation(libs.kotlinx.coroutines.swing)
                 implementation(libs.slf4j.api)
                 implementation(libs.logback.classic)

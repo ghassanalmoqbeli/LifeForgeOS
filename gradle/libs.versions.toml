@@ -53,9 +53,6 @@ compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview"
 compose-components-resources = { module = "androidx.compose.ui:ui-resources", version.ref = "compose" }
 compose-navigation = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation" }
 
-compose-desktop-webview = { module = "org.jetbrains.compose.desktop:webview", version.ref = "compose" }
-compose-desktop-window = { module = "org.jetbrains.compose.desktop:window", version.ref = "compose" }
-
 # AndroidX
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
 androidx-lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "androidxLifecycle" }
