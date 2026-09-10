@@ -96,7 +96,7 @@ kotlin {
         }
 
         val iosMain by creating {
-            dependsOn(commonMain.get())
+            dependsOn(commonMain)
             dependencies {
                 implementation(libs.kotlinx.coroutines.ios)
                 implementation(libs.sqldelight.native)
