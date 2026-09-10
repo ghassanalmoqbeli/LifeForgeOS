@@ -1,22 +1,23 @@
 package com.lifeforge.os.android.widgets
 
 import android.content.Context
-import androidx.work.Worker
+import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.lifeforge.os.core.logging.LifeForgeLogger
 import com.lifeforge.os.domain.repository.WaterRepository
-import org.koin.android.ext.android.inject
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import java.util.Calendar
 
 class WidgetUpdateWorker(
     appContext: Context,
     params: WorkerParameters,
-) : Worker(appContext, params) {
+) : CoroutineWorker(appContext, params), KoinComponent {
 
-    private val waterRepository: WaterRepository by appContext.inject()
-    private val logger: LifeForgeLogger by appContext.inject()
+    private val waterRepository: WaterRepository by inject()
+    private val logger: LifeForgeLogger by inject()
 
-    override fun doWork(): Result {
+    override suspend fun doWork(): Result {
         return try {
             val calendar = Calendar.getInstance().apply {
                 set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)

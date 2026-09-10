@@ -26,7 +26,7 @@ object WidgetViews {
         val views = RemoteViews(context.packageName, R.layout.widget_daily_overview)
         views.setTextViewText(R.id.widget_title, context.getString(R.string.widget_daily_overview))
         val waterLabel = if (waterMl >= 0) {
-            context.getString(R.string.widget_water_value, waterMl)
+            context.getString(R.string.widget_water, waterMl)
         } else {
             context.getString(R.string.widget_empty)
         }
