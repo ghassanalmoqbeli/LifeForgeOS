@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.compose.compiler)
@@ -12,14 +13,6 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
     iosX64()
-
-    val commonTest by getting {
-        dependencies {
-            implementation(kotlin("test"))
-            implementation(libs.kotlinx.coroutines.test)
-            implementation(libs.turbine)
-        }
-    }
 
     sourceSets {
         val commonMain by getting {
@@ -42,8 +35,8 @@ kotlin {
                 implementation(compose.materialIconsExtended)
 
                 // Navigation
-                implementation(compose.navigation)
-                implementation(compose.navigation.serialization)
+                implementation(libs.compose.navigation)
+                implementation(libs.compose.navigation.serialization)
 
                 // Koin DI
                 implementation(libs.koin.core)
@@ -114,9 +107,6 @@ kotlin {
                 implementation(kotlin("test"))
                 implementation(libs.kotlinx.coroutines.test)
                 implementation(libs.turbine)
-                implementation(compose.ui.test)
-                implementation(compose.ui.test.junit4)
-                implementation(compose.ui.test.manifest)
             }
         }
     }
@@ -145,6 +135,17 @@ sqldelight {
     }
 }
 
+kotlin {
+    targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
+        binaries {
+            framework {
+                baseName = "LifeForgeCommon"
+                isStatic = false
+            }
+        }
+    }
+}
+
 val packForXcode by tasks.creating(Sync::class) {
     group = "build"
     val mode = System.getenv("CONFIGURATION") ?: "DEBUG"
@@ -161,16 +162,3 @@ val packForXcode by tasks.creating(Sync::class) {
 tasks.named("build") {
     dependsOn(packForXcode)
 }
-
-kotlin {
-    targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
-        binaries {
-            framework {
-                baseName = "LifeForgeCommon"
-                isStatic = false
-            }
-        }
-    }
-}
-
-val composeCompilerVersion = "1.6.10"
