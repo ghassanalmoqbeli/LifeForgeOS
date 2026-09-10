@@ -3,6 +3,7 @@ package com.lifeforge.os.sync.cloud
 import android.content.Context
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.storage.FirebaseStorage
 import com.lifeforge.os.core.logging.LifeForgeLogger
@@ -12,6 +13,7 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.obj
 
 class FirebaseSyncProvider(
     private val context: Context,
@@ -40,7 +42,7 @@ class FirebaseSyncProvider(
                 email = user.email ?: "",
                 displayName = user.displayName,
                 photoUrl = user.photoUrl?.toString(),
-                accessToken = token.token,
+                accessToken = token.token ?: "",
                 refreshToken = "",
                 expiresAt = System.currentTimeMillis() + 3_600_000,
             )
@@ -58,7 +60,7 @@ class FirebaseSyncProvider(
                 email = result.user!!.email!!,
                 displayName = result.user!!.displayName,
                 photoUrl = result.user!!.photoUrl?.toString(),
-                accessToken = token!!.token,
+                accessToken = token?.token ?: "",
                 refreshToken = "",
                 expiresAt = System.currentTimeMillis() + 3_600_000,
             )
@@ -76,7 +78,7 @@ class FirebaseSyncProvider(
                 email = result.user!!.email!!,
                 displayName = result.user!!.displayName,
                 photoUrl = result.user!!.photoUrl?.toString(),
-                accessToken = token!!.token,
+                accessToken = token?.token ?: "",
                 refreshToken = "",
                 expiresAt = System.currentTimeMillis() + 3_600_000,
             )
@@ -142,7 +144,7 @@ class FirebaseSyncProvider(
         entityType: String,
         filters: Map<String, Any>,
     ): Result<List<RemoteRecord>> = try {
-        var query = userCollection(entityType)
+        var query: Query = userCollection(entityType)
         filters.forEach { (k, v) -> query = query.whereEqualTo(k, v) }
         val snapshot = query.get().await()
         val records = snapshot.documents.map { doc ->

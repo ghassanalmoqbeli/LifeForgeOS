@@ -1478,7 +1478,7 @@ selectWaterByDate:
 SELECT * FROM WaterLog WHERE date = ? AND deletedAt IS NULL ORDER BY time;
 
 sumWaterByDate:
-SELECT COALESCE(SUM(amountMl), 0) FROM WaterLog WHERE date = ? AND deletedAt IS NULL;
+SELECT COALESCE(SUM(amountMl), 0) AS totalMl FROM WaterLog WHERE date = ? AND deletedAt IS NULL;
 
 insertWaterLog:
 INSERT INTO WaterLog

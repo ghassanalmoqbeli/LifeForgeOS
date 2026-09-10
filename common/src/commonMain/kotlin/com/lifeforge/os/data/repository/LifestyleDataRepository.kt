@@ -191,7 +191,7 @@ class WaterRepositoryImpl(
     }
 
     override suspend fun getTotalForDay(date: Long): Int =
-        db.q.sumWaterByDate(date).executeAsOneOrNull()?.toInt() ?: 0
+        db.q.sumWaterByDate(date).executeAsOneOrNull()?.totalMl?.toInt() ?: 0
 }
 
 class HabitRepositoryImpl(

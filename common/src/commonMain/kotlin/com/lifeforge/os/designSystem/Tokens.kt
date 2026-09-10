@@ -1,12 +1,8 @@
 package com.lifeforge.os.designSystem
 
 import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.DampingRatioHighBouncy
-import androidx.compose.animation.core.DampingRatioMediumBouncy
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
-import androidx.compose.animation.core.StiffnessHigh
-import androidx.compose.animation.core.StiffnessLow
-import androidx.compose.animation.core.StiffnessMedium
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -465,18 +461,18 @@ object MotionTokens {
     val SlowTween: TweenSpec<Float> = tween(DurationSlow, easing = StandardEasing)
 
     val StandardSpring: SpringSpec<Float> = spring(
-        dampingRatio = DampingRatioMediumBouncy,
-        stiffness = StiffnessMedium
+        dampingRatio = Spring.DampingRatioMediumBouncy,
+        stiffness = Spring.StiffnessMedium
     )
 
     val BouncySpring: SpringSpec<Float> = spring(
-        dampingRatio = DampingRatioMediumBouncy,
-        stiffness = StiffnessLow
+        dampingRatio = Spring.DampingRatioMediumBouncy,
+        stiffness = Spring.StiffnessLow
     )
 
     val StiffSpring: SpringSpec<Float> = spring(
-        dampingRatio = DampingRatioHighBouncy,
-        stiffness = StiffnessHigh
+        dampingRatio = Spring.DampingRatioHighBouncy,
+        stiffness = Spring.StiffnessHigh
     )
 
     // Semantic
