@@ -47,12 +47,6 @@ kotlin {
 
                 // Result/Error handling
                 implementation(libs.arrow.core)
-
-                // Logging
-                implementation(libs.kermit)
-
-                // UUID
-                implementation(libs.uuid)
             }
         }
 

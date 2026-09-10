@@ -27,8 +27,6 @@ okio = "3.6.0"
 sqldelight = "2.0.1"
 koin = "4.0.0"
 arrow = "1.2.4"
-kermit = "2.6.0"
-uuid = "0.7.0"
 turbine = "1.0.1"
 junit = "4.13.2"
 junitJupiter = "5.10.2"
@@ -112,14 +110,6 @@ koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 
 # Arrow
 arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
-
-# Kermit (Logging)
-kermit = { module = "com.here.kermit:kermit", version.ref = "kermit" }
-kermit-android = { module = "com.here.kermit:kermit-android", version.ref = "kermit" }
-kermit-slf4j = { module = "com.here.kermit:kermit-slf4j", version.ref = "kermit" }
-
-# UUID
-uuid = { module = "com.sandinh:kpuuid", version.ref = "uuid" }
 
 # Testing
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
